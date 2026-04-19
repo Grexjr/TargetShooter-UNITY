@@ -4,13 +4,10 @@ using UnityEngine;
 
 public class SpawnManager : MonoBehaviour
 {
-    // TODO Need check to ensure they do not spawn underneath player or right next--hole in spawn allowable area
-
-
     // Game state information (get this from game later, probably)
     public int wave = 1;
     public bool canSpawnWave = true;
-    public float buffer = 5.0f;
+    public float buffer = 15.0f;
 
     // Reference to the ground to provide ranges of spawning
     public GameObject ground;
@@ -88,7 +85,11 @@ public class SpawnManager : MonoBehaviour
         toAdd.GetComponent<Enemy>().OnEnemyDeath += () => {
             enemies.Remove(toAdd);
             print("Enemy is dead!");
-            print("Spawn status: " + canSpawnWave);
+        };
+        toAdd.GetComponent<Enemy>().OnEnemyHit += () =>
+        {
+            print("Enemy has hit player!");
+            enemies.Remove(toAdd);
         };
     }
 
