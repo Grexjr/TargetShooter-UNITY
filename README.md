@@ -1,18 +1,20 @@
 <h1>TARGET SHOOTER DEMO</h1>
 
-SUMMARY:
+<h3>SUMMARY:</h3>
 This is a target shooting game in 3d space made with Unity. The player
 is a stationary turret, and around the player arise enemies in waves. Shoot
 all enemies to move to the next wave and increase your score. 
 
 
-HOW TO PLAY:
-Look around - move mouse
-Shoot - left click
-Use Powerup - space bar
+<h3>HOW TO PLAY:</h3>
+<p>Look around - move mouse</p>
+<p>Shoot - left click</p>
+<p>Use Powerup - space bar</p>
+<p>Pause - p</p>
+<p>Reload - r</p>
 
 
-FEATURES:
+<h3>FEATURES:</h3>
 This game will feature:
 
 1. Enemies that spawn at random locations and move towards the player
@@ -29,14 +31,14 @@ on the wave
 4. Effects, including with powerups, enemy death, and player damage/death
 
 
-DEADLINES:
+<h3>DEADLINES:</h3>
 Version 1.0 - April 26, 2026
 Version 1.1 - May 3, 2026
 
 
-TECHNICAL DETAILS:
+<h3>TECHNICAL DETAILS:</h3>
 More will be discussed in a 'postmortem' section, but this will detail certain
 technical details about the project including strategies and anything uniquely
 organized.
 
-END
+<h2>END</h2>
