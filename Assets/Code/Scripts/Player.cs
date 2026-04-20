@@ -28,6 +28,9 @@ public class Player : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        // TODO - here for now but should change, lock cursor into screen
+        Cursor.lockState = CursorLockMode.Locked;
+
         // Save reference to the input system's binding of the attack action
         attackAction = InputSystem.actions.FindActionMap("Player").FindAction("Attack");
         lookAction = InputSystem.actions.FindActionMap("Player").FindAction("Look");

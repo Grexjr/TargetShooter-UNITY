@@ -593,7 +593,7 @@ MonoBehaviour:
   buffer: 5
   ground: {fileID: 283913666}
   enemyPrefab: {fileID: 9004630157686622258, guid: 0cfcf1b4236844bc298d69fd130a6f7b, type: 3}
-  player: {fileID: 0}
+  player: {fileID: 1292309999}
   enemies: []
 --- !u!1 &1292309999
 GameObject:
