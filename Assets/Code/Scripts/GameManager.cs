@@ -27,6 +27,9 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
         }
 
+        // Set cursor to be locked into the screen
+        Cursor.lockState = CursorLockMode.Locked;
+
         // Set up the action map
         pauseAction = InputSystem.actions.FindActionMap("Player").FindAction("Pause");
 

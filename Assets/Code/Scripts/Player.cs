@@ -5,6 +5,8 @@ using UnityEngine.InputSystem;
 public class Player : MonoBehaviour
 {
 
+    public System.Action OnTakeDamage;
+
     // References to other necessary objects
     public Transform cameraTransform;
 
@@ -25,12 +27,21 @@ public class Player : MonoBehaviour
     // Rotation values for looking around
     private float xRotation = 0.0f;
 
+
+    // Initialization, guaranteed to happen first
+    void Awake()
+    {
+        // Initialize player values
+        maxHealth = 10;
+        maxAmmo = 5;
+        currentHealth = maxHealth;
+        currentAmmo = maxAmmo;
+    }
+
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        // TODO - here for now but should change, lock cursor into screen
-        Cursor.lockState = CursorLockMode.Locked;
-
         // Save reference to the input system's binding of the attack action
         attackAction = InputSystem.actions.FindActionMap("Player").FindAction("Attack");
         lookAction = InputSystem.actions.FindActionMap("Player").FindAction("Look");
@@ -58,14 +69,28 @@ public class Player : MonoBehaviour
         
         
     }
+
+    public void TakeDamage()
+    {
+        // Reduce health
+        currentHealth -= 1;
+        // Broadcast that player was hit
+        OnTakeDamage?.Invoke();
+    }
     
     // Check if the player is shooting
     void CheckShooting() {
         // New input manager, returns bool if key pressed this frame
         if(attackAction.WasPressedThisFrame()) {
-            // Creates a bullt prefab at the fire point (player body) position with offset,
-            // Creates a bullet prefab with default rotation (no rotation)
-            Instantiate(bulletPrefab,cameraTransform.position,cameraTransform.rotation);
+            // Checks if the player has ammo above zero
+            if(currentAmmo > 0)
+            {
+                // If so, Creates a bullt prefab at the fire point (player body) position with offset, default rotation (no rotation)
+                Instantiate(bulletPrefab,cameraTransform.position,cameraTransform.rotation);
+            }
+
+            // TODO: some indication that player is out of ammo
+                   
         }
     }
 

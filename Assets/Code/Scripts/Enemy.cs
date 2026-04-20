@@ -81,7 +81,7 @@ public class Enemy : MonoBehaviour
         if (other.CompareTag("Bullet"))
         {
             Destroy(gameObject);
-            OnEnemyDeath?.Invoke(); // Tell anyone listening that the enemy die
+            OnEnemyDeath?.Invoke(); // Tell anyone listening that the enemy died
         }
         else if (other.CompareTag("Player"))
         {

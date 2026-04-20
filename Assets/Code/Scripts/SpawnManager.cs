@@ -93,6 +93,8 @@ public class SpawnManager : MonoBehaviour
         toAdd.GetComponent<Enemy>().OnEnemyHit += () =>
         {
             print("Enemy has hit player!");
+            // Call upon player to do their logic based on the enemy broadcast
+            player.GetComponent<Player>().TakeDamage();
             enemies.Remove(toAdd);
         };
     }
