@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class SpawnManager : MonoBehaviour
 {
+    // Events that the UI listens for
+    public System.Action OnWaveComplete;
+
+
     // Game state information (get this from game later, probably)
     public int wave = 1;
     public bool canSpawnWave = true;
@@ -46,11 +50,17 @@ public class SpawnManager : MonoBehaviour
     {
         if(canSpawnWave)
         {
+            // Update wave FIRST so OnWaveComplete runs properly
             wave++;
+            // Invokes the event that the wave is complete
+            OnWaveComplete?.Invoke();
+            
             canSpawnWave = SpawnWave();
         }
         canSpawnWave = CheckWaveSpawn(enemies.Count);
     }
+
+    public int GetWave() { return wave; }
 
     Vector3 FindSpawnLocation()
     {
