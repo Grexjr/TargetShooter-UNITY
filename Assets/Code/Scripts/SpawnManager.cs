@@ -9,7 +9,6 @@ public class SpawnManager : MonoBehaviour
 
 
     // Game state information (get this from game later, probably)
-    public int wave = 1;
     public bool canSpawnWave = true;
     public float buffer = 15.0f;
 
@@ -32,7 +31,6 @@ public class SpawnManager : MonoBehaviour
     void Start()
     {
         // Initialize variables
-        wave = 0;
         canSpawnWave = true;
         enemies = new List<GameObject>();
 
@@ -51,7 +49,7 @@ public class SpawnManager : MonoBehaviour
         if(canSpawnWave)
         {
             // Update wave FIRST so OnWaveComplete runs properly
-            wave++;
+            GameManager.Instance.IncrementWave();
             // Invokes the event that the wave is complete
             OnWaveComplete?.Invoke();
             
@@ -59,8 +57,6 @@ public class SpawnManager : MonoBehaviour
         }
         canSpawnWave = CheckWaveSpawn(enemies.Count);
     }
-
-    public int GetWave() { return wave; }
 
     Vector3 FindSpawnLocation()
     {
@@ -106,7 +102,8 @@ public class SpawnManager : MonoBehaviour
     // Spawns enemies in the wave, then returns false to set canSpawnWave to false
     bool SpawnWave()
     {
-        for(int i = 0; i < wave; i++)
+        // For now spawns as many enemies as the wave number
+        for(int i = 0; i < GameManager.Instance.waveNum; i++)
         {
             SpawnEnemy(FindSpawnLocation());
         }

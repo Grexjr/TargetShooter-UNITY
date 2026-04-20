@@ -16,13 +16,13 @@ public class UIManager : MonoBehaviour
     void Start()
     {
         // initialize references
-        wave = spawnManager.GetComponent<SpawnManager>().GetWave();
+        wave = GameManager.Instance.waveNum;
 
         // subscribe to wave update event
         spawnManager.GetComponent<SpawnManager>().OnWaveComplete += () =>
         {
             // Update the wave value
-            wave = spawnManager.GetComponent<SpawnManager>().GetWave();
+            wave = GameManager.Instance.waveNum;
         };
     }
 
