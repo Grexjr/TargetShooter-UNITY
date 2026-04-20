@@ -4,9 +4,6 @@ using UnityEngine;
 
 public class SpawnManager : MonoBehaviour
 {
-    // Events that the UI listens for
-    public System.Action OnWaveComplete;
-
 
     // Game state information (get this from game later, probably)
     public bool canSpawnWave = true;
@@ -50,9 +47,6 @@ public class SpawnManager : MonoBehaviour
         {
             // Update wave FIRST so OnWaveComplete runs properly
             GameManager.Instance.IncrementWave();
-            // Invokes the event that the wave is complete
-            OnWaveComplete?.Invoke();
-            
             canSpawnWave = SpawnWave();
         }
         canSpawnWave = CheckWaveSpawn(enemies.Count);
@@ -91,6 +85,10 @@ public class SpawnManager : MonoBehaviour
         toAdd.GetComponent<Enemy>().OnEnemyDeath += () => {
             enemies.Remove(toAdd);
             print("Enemy is dead!");
+            // Updates score here
+            // TODO: figure out where to best update score when this happens
+            // TODO: only add score if the player has not taken damage (save reference to health before wave)
+            GameManager.Instance.AddScore(10);
         };
         toAdd.GetComponent<Enemy>().OnEnemyHit += () =>
         {
@@ -102,6 +100,13 @@ public class SpawnManager : MonoBehaviour
     // Spawns enemies in the wave, then returns false to set canSpawnWave to false
     bool SpawnWave()
     {
+        // Adds score per wave cleared (basically any wave number after 1)
+        // TODO: may want this somewhere else
+        if(GameManager.Instance.waveNum > 1)
+        {
+            GameManager.Instance.AddScore(100);
+        }
+
         // For now spawns as many enemies as the wave number
         for(int i = 0; i < GameManager.Instance.waveNum; i++)
         {

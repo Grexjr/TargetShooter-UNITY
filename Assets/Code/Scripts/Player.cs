@@ -48,8 +48,15 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Look();
-        CheckShooting();
+        // FIXME: This is part of the temporary fix; this pauses the game, in future we should change this to be a better
+        // pausing system.
+        if(Time.timeScale > 0)
+        {
+            Look();
+            CheckShooting();   
+        }
+        
+        
     }
     
     // Check if the player is shooting

@@ -8,29 +8,23 @@ public class UIManager : MonoBehaviour
 
     // Reference to the UI object for wave text
     public TextMeshProUGUI waveText;
-    private int wave = 0;
-
+    
+    // Reference to the UI object for score text
+    public TextMeshProUGUI scoreText;
     
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        // initialize references
-        wave = GameManager.Instance.waveNum;
 
-        // subscribe to wave update event
-        spawnManager.GetComponent<SpawnManager>().OnWaveComplete += () =>
-        {
-            // Update the wave value
-            wave = GameManager.Instance.waveNum;
-        };
     }
 
     // Update is called once per frame
     void Update()
     {
         // Every frame, keep the wave text updated
-        waveText.text = "Wave: " + wave;
+        waveText.text = "Wave: " + GameManager.Instance.waveNum;
+        scoreText.text = "Score: " + GameManager.Instance.score;
     }
 
 
