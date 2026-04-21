@@ -40,7 +40,15 @@ public class SpawnManager : MonoBehaviour
         // One below the ground, so they rize up out of the ground
         yRange = ground.GetComponent<Renderer>().bounds.size.y - 1;
 
-
+        // Subscribe to game on restart event with command to destroy all enemies
+        GameManager.Instance.GetComponent<GameManager>().OnGameRestart += () =>
+        {
+            foreach(GameObject g in enemies)
+            {
+                Destroy(g);
+            }
+            enemies.Clear();
+        };
     }
 
     // Update is called once per frame

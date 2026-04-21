@@ -7,6 +7,9 @@ public class GameManager : MonoBehaviour
     // instance that everyone can see
     public static GameManager Instance;
 
+    // Essential game objects
+    public GameObject player;
+
     // Game state variables
     public int score = 0;
     public int waveNum = 0;
@@ -15,6 +18,9 @@ public class GameManager : MonoBehaviour
 
     // Input Maps
     private InputAction pauseAction;
+
+    // Systme Actions that others listen to
+    public System.Action OnGameRestart;
 
     void Awake()
     {
@@ -36,7 +42,18 @@ public class GameManager : MonoBehaviour
         if(pauseAction != null)
         {
             pauseAction.Enable();
-        } 
+        }
+    }
+
+    void Start()
+    {
+        if(player != null)
+        {
+            player.GetComponent<Player>().OnDeath += () =>
+            {
+                EndGame();
+            };
+        }
     }
 
     void Update()
@@ -83,11 +100,31 @@ public class GameManager : MonoBehaviour
     public void EndGame()
     {
         isGameOver = true;
+        Time.timeScale = 0.0f;
+        Cursor.lockState = CursorLockMode.Confined;
     }
 
     public void RestartGame()
     {
+        //TODO: make the game manager and player less tightly coupled
+        // TODO: Put this in player and have player listen to the on game restart routine by game manager
+        // Set all variables back to zero
+        score = 0;
+        waveNum = 0; // set to 1 so enemies start spawning again
+        player.GetComponent<Player>().currentHealth = player.GetComponent<Player>().maxHealth;
+        player.GetComponent<Player>().currentAmmo = player.GetComponent<Player>().maxAmmo;
+        // TODO: way to reset reload timer if needed
+
         isGameOver = false;
+
+        // Broadcast that game is restarting
+        OnGameRestart?.Invoke();
+
+        // Change cursor mode back
+        Cursor.lockState = CursorLockMode.Locked;
+
+        // Set time scale back to normal
+        Time.timeScale = 1.0f;
     }
 
 }

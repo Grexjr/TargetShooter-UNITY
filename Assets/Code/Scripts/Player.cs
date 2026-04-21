@@ -11,6 +11,7 @@ public class Player : MonoBehaviour
     public System.Action OnReloadTimerStart; // broadcast to: HUDManager
     public System.Action<float> OnReloadTimerTick; // broadcast to: HUDManager
     public System.Action OnReloadTimerEnd; // broadcast to: HUDManager
+    public System.Action OnDeath; // broadcast to: GameManager
 
     // References to other necessary objects
     public Transform cameraTransform;
@@ -84,6 +85,11 @@ public class Player : MonoBehaviour
         // Reduce health
         currentHealth -= 1;
         currentHealth = Math.Max(0,currentHealth);
+        if(currentHealth == 0)
+        {
+            // Tell things player has died
+            OnDeath?.Invoke();
+        }
     }
 
     void ReduceAmmo()

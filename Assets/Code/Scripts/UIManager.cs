@@ -7,6 +7,8 @@ public class UIManager : MonoBehaviour
     // Reference to game objects
     public GameObject spawnManager;
     public GameObject player;
+    public GameObject hud;
+    public GameObject gameOverUI;
 
     // Reference to the UI object for wave text
     public TextMeshProUGUI waveText;
@@ -44,6 +46,17 @@ public class UIManager : MonoBehaviour
             // Remove temporary timer from HUD
             reloadTimer.gameObject.SetActive(false);
         };
+        player.GetComponent<Player>().OnDeath += () =>
+        {
+            // Run UI Game over
+            SwapToGameOver();
+        };
+        // Subscribe to game manager events
+        GameManager.Instance.GetComponent<GameManager>().OnGameRestart += () =>
+        {
+            // Swap back to game UI
+            SwapToGameUI();
+        };
     }
 
     // Update is called once per frame
@@ -58,6 +71,23 @@ public class UIManager : MonoBehaviour
         ammoText.text = player.GetComponent<Player>().currentAmmo + "/" + player.GetComponent<Player>().maxAmmo;
         // Set reload timer max every frame, but its current value is handled by the countdown co-routine in player class
         reloadTimer.maxValue = maxReload;
+    }
+
+    void SwapToGameOver()
+    {
+        // First set the graphics raycasting of the game UI to false so it does not show up and set game over to true
+        hud.GetComponent<GraphicRaycaster>().enabled = false;
+        hud.gameObject.SetActive(false);
+        gameOverUI.gameObject.SetActive(true);
+        gameOverUI.GetComponent<GraphicRaycaster>().enabled = true;
+    }
+
+    void SwapToGameUI()
+    {
+        gameOverUI.gameObject.SetActive(false);
+        gameOverUI.GetComponent<GraphicRaycaster>().enabled = false;
+        hud.gameObject.SetActive(true);
+        hud.GetComponent<GraphicRaycaster>().enabled = true;
     }
 
 
