@@ -3,6 +3,7 @@ using UnityEngine.InputSystem;
 
 public class GameManager : MonoBehaviour
 {
+    //TODO: GENERAL>>ADD ONDISABLE TO OBJECTS
     // Static Instance
     // instance that everyone can see
     public static GameManager Instance;
@@ -20,7 +21,7 @@ public class GameManager : MonoBehaviour
     private InputAction pauseAction;
 
     // Systme Actions that others listen to
-    public System.Action OnGameRestart;
+    public System.Action OnGameRestart; // broadcast to: all lower entities (player, spawn manager, enemy)
 
     void Awake()
     {
@@ -39,21 +40,25 @@ public class GameManager : MonoBehaviour
         // Set up the action map
         pauseAction = InputSystem.actions.FindActionMap("Player").FindAction("Pause");
 
-        if(pauseAction != null)
-        {
-            pauseAction.Enable();
-        }
+        // Enable if pause action is not null, otherwise it does nothing
+        pauseAction?.Enable();
     }
 
     void Start()
     {
         if(player != null)
         {
-            player.GetComponent<Player>().OnDeath += () =>
-            {
-                EndGame();
-            };
+            // Subscribe to the on death event of the player
+            player.GetComponent<Player>().OnDeath += EndGame;
+        } 
+        else
+        {
+            Debug.Log("ERROR: No player found!");
         }
+
+        // Subscribe to static enemy broadcast
+        // NOTE: parameters are passed implicitly by the event--cool!
+        Enemy.OnEnemyDeath += AddScore;
     }
 
     void Update()
@@ -82,7 +87,7 @@ public class GameManager : MonoBehaviour
     public void Pause()
     {
         isPaused = true;
-        // FIXME: find a better way to do this, this is temporary and works with your basic logic
+        // TODO: find a better way to do this, this is temporary and works with your basic logic
         // IDEA: use a game object that calls all the update steps necessary
         Time.timeScale = 0.0f;
         // TODO: Also add wraps for if(Time.timeScale > 0) for all timers, like shooting countdown
@@ -106,18 +111,12 @@ public class GameManager : MonoBehaviour
 
     public void RestartGame()
     {
-        //TODO: make the game manager and player less tightly coupled
-        // TODO: Put this in player and have player listen to the on game restart routine by game manager
         // Set all variables back to zero
         score = 0;
         waveNum = 0; // set to 1 so enemies start spawning again
-        player.GetComponent<Player>().currentHealth = player.GetComponent<Player>().maxHealth;
-        player.GetComponent<Player>().currentAmmo = player.GetComponent<Player>().maxAmmo;
-        // TODO: way to reset reload timer if needed
-
         isGameOver = false;
 
-        // Broadcast that game is restarting
+        // Broadcast that game is restarting so other objects set their states to default
         OnGameRestart?.Invoke();
 
         // Change cursor mode back

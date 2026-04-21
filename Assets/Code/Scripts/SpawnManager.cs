@@ -16,8 +16,8 @@ public class SpawnManager : MonoBehaviour
     // Reference to player for buffer
     public GameObject player;
 
-    // Reference to list of enemies
-    public List<GameObject> enemies;
+    // Number of enemies still alive
+    public int enemiesAlive;
 
     // Private variables
     private float xRange;
@@ -32,7 +32,7 @@ public class SpawnManager : MonoBehaviour
     {
         // Initialize variables
         canSpawnWave = true;
-        enemies = new List<GameObject>();
+        enemiesAlive = 0;
 
         // Get references to half of the ground range -- distance from origin enemies can spawn in x and y directions
         xRange = ground.GetComponent<Renderer>().bounds.size.x/2;
@@ -41,13 +41,12 @@ public class SpawnManager : MonoBehaviour
         yRange = ground.GetComponent<Renderer>().bounds.size.y - 1;
 
         // Subscribe to game on restart event with command to destroy all enemies
-        GameManager.Instance.GetComponent<GameManager>().OnGameRestart += () =>
+        GameManager.Instance.OnGameRestart += ResetState;
+        Enemy.OnEnemyDeath += RemoveEnemy;
+        // Subscribe to enemy on hit event to remove the enemy, need lambda because of point requirement
+        Enemy.OnEnemyHit += () =>
         {
-            foreach(GameObject g in enemies)
-            {
-                Destroy(g);
-            }
-            enemies.Clear();
+            RemoveEnemy(0);
         };
     }
 
@@ -60,7 +59,17 @@ public class SpawnManager : MonoBehaviour
             GameManager.Instance.IncrementWave();
             canSpawnWave = SpawnWave();
         }
-        canSpawnWave = CheckWaveSpawn(enemies.Count);
+        canSpawnWave = CheckWaveSpawn(enemiesAlive);
+    }
+
+    void OnDisable()
+    {
+        // Clean up static subscriptions
+        Enemy.OnEnemyDeath -= RemoveEnemy;
+        if(GameManager.Instance != null)
+        {
+            GameManager.Instance.OnGameRestart -= ResetState;
+        }
     }
 
     Vector3 FindSpawnLocation()
@@ -88,27 +97,10 @@ public class SpawnManager : MonoBehaviour
 
     void SpawnEnemy(Vector3 spawnPos)
     {
-        // Instantiates an enemy to be facing straight up
-        // This then calls the enemy scripting
-        GameObject toAdd = Instantiate(enemyPrefab,spawnPos,Quaternion.Euler(-90f,0f,0f));
-        enemies.Add(toAdd);
-        
-        // Subscribe to death event
-        toAdd.GetComponent<Enemy>().OnEnemyDeath += () => {
-            enemies.Remove(toAdd);
-            print("Enemy is dead!");
-            // Updates score here
-            // TODO: figure out where to best update score when this happens
-            // TODO: only add score if the player has not taken damage (save reference to health before wave)
-            GameManager.Instance.AddScore(10);
-        };
-        toAdd.GetComponent<Enemy>().OnEnemyHit += () =>
-        {
-            print("Enemy has hit player!");
-            // Call upon player to do their logic based on the enemy broadcast
-            player.GetComponent<Player>().TakeDamage();
-            enemies.Remove(toAdd);
-        };
+        // Instantiates an enemy to be facing straight up at a randomized spawn position
+        Instantiate(enemyPrefab,spawnPos,Quaternion.Euler(-90f,0f,0f));
+        // Increments enemies alive value
+        enemiesAlive++;
     }
 
     // Spawns enemies in the wave, then returns false to set canSpawnWave to false
@@ -116,7 +108,7 @@ public class SpawnManager : MonoBehaviour
     {
         // Adds score per wave cleared (basically any wave number after 1)
         // Only adds 100 score if player health is same as it was, i.e. player took no damage that round
-        // TODO: may want this somewhere else
+        // TODO: Use a broadcast of spawn wave, either with or without extra points
         if(GameManager.Instance.waveNum > 1 && player.GetComponent<Player>().currentHealth == playerHealth)
         {
             GameManager.Instance.AddScore(100);
@@ -142,6 +134,18 @@ public class SpawnManager : MonoBehaviour
             return true;
         }
         return false;
+    }
+
+    void ResetState()
+    {
+        // Sets enemiesAlive to 0 so new wave can start
+        enemiesAlive = 0;
+    }
+
+    // does not need the integer parameter for points
+    void RemoveEnemy(int _)
+    {
+        enemiesAlive = Mathf.Max(0,enemiesAlive-1);
     }
 
 

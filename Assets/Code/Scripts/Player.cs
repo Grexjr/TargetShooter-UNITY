@@ -21,7 +21,7 @@ public class Player : MonoBehaviour
     public int maxAmmo, currentAmmo;
     
     // Controls variables
-    public float sensitivity = 1.0f;
+    public float sensitivity = 0.5f;
 
     // Bullet reference
     public GameObject bulletPrefab;
@@ -48,6 +48,9 @@ public class Player : MonoBehaviour
         maxAmmo = 5;
         currentHealth = maxHealth;
         currentAmmo = maxAmmo;
+
+        // Subscribe to game manager broadcasts and call reset state when game is restarted
+        GameManager.Instance.GetComponent<GameManager>().OnGameRestart += ResetStats;
     }
 
 
@@ -59,8 +62,7 @@ public class Player : MonoBehaviour
         lookAction = InputSystem.actions.FindActionMap("Player").FindAction("Look");
         reloadAction = InputSystem.actions.FindActionMap("Player").FindAction("Reload");
         
-        // MUST enable the action
-        // NOTE: this syntax is null propagation or something like that, basically an inline null check
+        // MUST enable the action (uses inline null check with ? operator)
         attackAction?.Enable(); 
         lookAction?.Enable();
         reloadAction?.Enable();
@@ -75,9 +77,15 @@ public class Player : MonoBehaviour
         {
             Look();
             CheckShooting();   
+        }        
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Enemy"))
+        {
+            TakeDamage();
         }
-        
-        
     }
 
     public void TakeDamage()
@@ -85,9 +93,9 @@ public class Player : MonoBehaviour
         // Reduce health
         currentHealth -= 1;
         currentHealth = Math.Max(0,currentHealth);
+        // Broadcast event that player has died if health == 0
         if(currentHealth == 0)
         {
-            // Tell things player has died
             OnDeath?.Invoke();
         }
     }
@@ -144,7 +152,7 @@ public class Player : MonoBehaviour
         {
             Reload();
             canReload = false;
-            StartCoroutine(DoReloadCountdown());
+            StartCoroutine(DoReloadCountdown()); // TODO: get reference so you can set to null and check to ensure it doesn't start twice and game over
         }
     }
 
@@ -167,6 +175,13 @@ public class Player : MonoBehaviour
 
         // HORIZONTAL
         transform.Rotate(Vector3.up * mouseX);
+    }
+
+    void ResetStats()
+    {
+        currentHealth = maxHealth;
+        currentAmmo = maxAmmo;
+        canReload = true; // TODO: make sure this timer is interrupted if it is going
     }
     
 }
