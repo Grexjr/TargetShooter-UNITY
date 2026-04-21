@@ -24,6 +24,9 @@ public class SpawnManager : MonoBehaviour
     private float yRange;
     private float zRange;
 
+    // Health tracking for adding score
+    private int playerHealth = 0;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -65,6 +68,7 @@ public class SpawnManager : MonoBehaviour
 
             spawnPos = new Vector3(randomX, yRange, randomZ);
 
+            //Prevents infinity if things break
             safety++;
             if(safety > 100) break;
 
@@ -103,8 +107,9 @@ public class SpawnManager : MonoBehaviour
     bool SpawnWave()
     {
         // Adds score per wave cleared (basically any wave number after 1)
+        // Only adds 100 score if player health is same as it was, i.e. player took no damage that round
         // TODO: may want this somewhere else
-        if(GameManager.Instance.waveNum > 1)
+        if(GameManager.Instance.waveNum > 1 && player.GetComponent<Player>().currentHealth == playerHealth)
         {
             GameManager.Instance.AddScore(100);
         }
@@ -114,6 +119,9 @@ public class SpawnManager : MonoBehaviour
         {
             SpawnEnemy(FindSpawnLocation());
         }
+
+        // Saves player score at start of wave
+        playerHealth = player.GetComponent<Player>().currentHealth;
 
         return false;
     }

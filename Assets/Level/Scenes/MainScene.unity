@@ -1088,6 +1088,7 @@ MonoBehaviour:
   healthBar: {fileID: 203338408}
   healthText: {fileID: 2051360699}
   ammoText: {fileID: 121188042}
+  reloadTimer: {fileID: 1755145912}
 --- !u!4 &535470822
 Transform:
   m_ObjectHideFlags: 0
