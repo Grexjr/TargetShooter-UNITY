@@ -38,7 +38,8 @@ public class Player : MonoBehaviour
     private float reloadBuffer = 5.0f;
     // Boolean for if reload is available
     private bool canReload = true;
-
+    // CoRoutine for stopping the countdown if needed
+    private Coroutine reloadCountdown;
 
     // Initialization, guaranteed to happen first
     void Awake()
@@ -50,7 +51,7 @@ public class Player : MonoBehaviour
         currentAmmo = maxAmmo;
 
         // Subscribe to game manager broadcasts and call reset state when game is restarted
-        GameManager.Instance.GetComponent<GameManager>().OnGameRestart += ResetStats;
+        GameManager.Instance.OnGameRestart += ResetStats;
     }
 
 
@@ -78,6 +79,11 @@ public class Player : MonoBehaviour
             Look();
             CheckShooting();   
         }        
+    }
+
+    void OnDisable()
+    {
+        GameManager.Instance.OnGameRestart -= ResetStats;
     }
 
     void OnTriggerEnter(Collider other)
@@ -152,7 +158,7 @@ public class Player : MonoBehaviour
         {
             Reload();
             canReload = false;
-            StartCoroutine(DoReloadCountdown()); // TODO: get reference so you can set to null and check to ensure it doesn't start twice and game over
+            reloadCountdown = StartCoroutine(DoReloadCountdown());
         }
     }
 
@@ -181,7 +187,16 @@ public class Player : MonoBehaviour
     {
         currentHealth = maxHealth;
         currentAmmo = maxAmmo;
-        canReload = true; // TODO: make sure this timer is interrupted if it is going
+        canReload = true;
+        if(reloadCountdown != null)
+        {
+            // Stop and remov the coRoutine
+            StopCoroutine(reloadCountdown);
+            reloadCountdown = null;
+            // Tell the UI to hide the bar
+            OnReloadTimerEnd?.Invoke();
+        }
+        
     }
     
 }

@@ -74,6 +74,16 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    // Unsubscribe from all events when disabled
+    void OnDisable()
+    {
+        if(player != null)
+        {
+            player.GetComponent<Player>().OnDeath -= EndGame;
+        }
+        Enemy.OnEnemyDeath -= AddScore;
+    }
+
     public void AddScore(int amount)
     {
         score += amount;

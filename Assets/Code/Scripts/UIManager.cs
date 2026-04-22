@@ -30,33 +30,12 @@ public class UIManager : MonoBehaviour
     void Start()
     {
         // Subscribe to player reload timer
-        player.GetComponent<Player>().OnReloadTimerStart += () =>
-        {
-            // Add temporary timer to HUD
-            reloadTimer.gameObject.SetActive(true);
-            reloadTimer.value = maxReload;
-        };
-        player.GetComponent<Player>().OnReloadTimerTick += (float timeRemaining) =>
-        {
-            // Count down with the value from the player functions
-            reloadTimer.value = timeRemaining;
-        };
-        player.GetComponent<Player>().OnReloadTimerEnd += () =>
-        {
-            // Remove temporary timer from HUD
-            reloadTimer.gameObject.SetActive(false);
-        };
-        player.GetComponent<Player>().OnDeath += () =>
-        {
-            // Run UI Game over
-            SwapToGameOver();
-        };
+        player.GetComponent<Player>().OnReloadTimerStart += StartReloadTimer;
+        player.GetComponent<Player>().OnReloadTimerTick += TickReloadTimer;
+        player.GetComponent<Player>().OnReloadTimerEnd += RemoveReloadTimer;
+        player.GetComponent<Player>().OnDeath += SwapToGameOver;
         // Subscribe to game manager events
-        GameManager.Instance.GetComponent<GameManager>().OnGameRestart += () =>
-        {
-            // Swap back to game UI
-            SwapToGameUI();
-        };
+        GameManager.Instance.OnGameRestart += SwapToGameUI;
     }
 
     // Update is called once per frame
@@ -71,6 +50,17 @@ public class UIManager : MonoBehaviour
         ammoText.text = player.GetComponent<Player>().currentAmmo + "/" + player.GetComponent<Player>().maxAmmo;
         // Set reload timer max every frame, but its current value is handled by the countdown co-routine in player class
         reloadTimer.maxValue = maxReload;
+    }
+
+    void OnDisable()
+    {
+        // Unsubscribe to player reload timer
+        player.GetComponent<Player>().OnReloadTimerStart -= StartReloadTimer;
+        player.GetComponent<Player>().OnReloadTimerTick -= TickReloadTimer;
+        player.GetComponent<Player>().OnReloadTimerEnd -= RemoveReloadTimer;
+        player.GetComponent<Player>().OnDeath -= SwapToGameOver;
+        // Unsubscribe to game manager events
+        GameManager.Instance.OnGameRestart -= SwapToGameUI;
     }
 
     void SwapToGameOver()
@@ -89,6 +79,27 @@ public class UIManager : MonoBehaviour
         hud.gameObject.SetActive(true);
         hud.GetComponent<GraphicRaycaster>().enabled = true;
     }
+
+    void StartReloadTimer()
+    {
+        // Add temporary timer to HUD
+        reloadTimer.gameObject.SetActive(true);
+        reloadTimer.value = maxReload;
+    }
+
+    void TickReloadTimer(float timeRemaining)
+    {
+        // Count down with the value from the player functions
+        reloadTimer.value = timeRemaining;
+    }
+
+    void RemoveReloadTimer()
+    {
+        // Remove temporary timer from HUD
+        reloadTimer.gameObject.SetActive(false);
+    }
+
+
 
 
 }
