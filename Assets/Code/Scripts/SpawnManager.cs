@@ -4,12 +4,8 @@ using UnityEngine;
 
 public class SpawnManager : MonoBehaviour
 {
-    // Events that the UI listens for
-    public System.Action OnWaveComplete;
-
 
     // Game state information (get this from game later, probably)
-    public int wave = 1;
     public bool canSpawnWave = true;
     public float buffer = 15.0f;
 
@@ -20,21 +16,23 @@ public class SpawnManager : MonoBehaviour
     // Reference to player for buffer
     public GameObject player;
 
-    // Reference to list of enemies
-    public List<GameObject> enemies;
+    // Number of enemies still alive
+    public int enemiesAlive;
 
     // Private variables
     private float xRange;
     private float yRange;
     private float zRange;
 
+    // Health tracking for adding score
+    private int playerHealth = 0;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         // Initialize variables
-        wave = 0;
         canSpawnWave = true;
-        enemies = new List<GameObject>();
+        enemiesAlive = 0;
 
         // Get references to half of the ground range -- distance from origin enemies can spawn in x and y directions
         xRange = ground.GetComponent<Renderer>().bounds.size.x/2;
@@ -42,7 +40,14 @@ public class SpawnManager : MonoBehaviour
         // One below the ground, so they rize up out of the ground
         yRange = ground.GetComponent<Renderer>().bounds.size.y - 1;
 
-
+        // Subscribe to game on restart event with command to destroy all enemies
+        GameManager.Instance.OnGameRestart += ResetState;
+        Enemy.OnEnemyDeath += RemoveEnemy;
+        // Subscribe to enemy on hit event to remove the enemy, need lambda because of point requirement
+        Enemy.OnEnemyHit += () =>
+        {
+            RemoveEnemy(0);
+        };
     }
 
     // Update is called once per frame
@@ -51,16 +56,21 @@ public class SpawnManager : MonoBehaviour
         if(canSpawnWave)
         {
             // Update wave FIRST so OnWaveComplete runs properly
-            wave++;
-            // Invokes the event that the wave is complete
-            OnWaveComplete?.Invoke();
-            
+            GameManager.Instance.IncrementWave();
             canSpawnWave = SpawnWave();
         }
-        canSpawnWave = CheckWaveSpawn(enemies.Count);
+        canSpawnWave = CheckWaveSpawn(enemiesAlive);
     }
 
-    public int GetWave() { return wave; }
+    void OnDisable()
+    {
+        // Clean up static subscriptions
+        Enemy.OnEnemyDeath -= RemoveEnemy;
+        if(GameManager.Instance != null)
+        {
+            GameManager.Instance.OnGameRestart -= ResetState;
+        }
+    }
 
     Vector3 FindSpawnLocation()
     {
@@ -75,6 +85,7 @@ public class SpawnManager : MonoBehaviour
 
             spawnPos = new Vector3(randomX, yRange, randomZ);
 
+            //Prevents infinity if things break
             safety++;
             if(safety > 100) break;
 
@@ -86,30 +97,31 @@ public class SpawnManager : MonoBehaviour
 
     void SpawnEnemy(Vector3 spawnPos)
     {
-        // Instantiates an enemy to be facing straight up
-        // This then calls the enemy scripting
-        GameObject toAdd = Instantiate(enemyPrefab,spawnPos,Quaternion.Euler(-90f,0f,0f));
-        enemies.Add(toAdd);
-        
-        // Subscribe to death event
-        toAdd.GetComponent<Enemy>().OnEnemyDeath += () => {
-            enemies.Remove(toAdd);
-            print("Enemy is dead!");
-        };
-        toAdd.GetComponent<Enemy>().OnEnemyHit += () =>
-        {
-            print("Enemy has hit player!");
-            enemies.Remove(toAdd);
-        };
+        // Instantiates an enemy to be facing straight up at a randomized spawn position
+        Instantiate(enemyPrefab,spawnPos,Quaternion.Euler(-90f,0f,0f));
+        // Increments enemies alive value
+        enemiesAlive++;
     }
 
     // Spawns enemies in the wave, then returns false to set canSpawnWave to false
     bool SpawnWave()
     {
-        for(int i = 0; i < wave; i++)
+        // Adds score per wave cleared (basically any wave number after 1)
+        // Only adds 100 score if player health is same as it was, i.e. player took no damage that round
+        // TODO: Use a broadcast of spawn wave, either with or without extra points
+        if(GameManager.Instance.waveNum > 1 && player.GetComponent<Player>().currentHealth == playerHealth)
+        {
+            GameManager.Instance.AddScore(100);
+        }
+
+        // For now spawns as many enemies as the wave number
+        for(int i = 0; i < GameManager.Instance.waveNum; i++)
         {
             SpawnEnemy(FindSpawnLocation());
         }
+
+        // Saves player score at start of wave
+        playerHealth = player.GetComponent<Player>().currentHealth;
 
         return false;
     }
@@ -122,6 +134,18 @@ public class SpawnManager : MonoBehaviour
             return true;
         }
         return false;
+    }
+
+    void ResetState()
+    {
+        // Sets enemiesAlive to 0 so new wave can start
+        enemiesAlive = 0;
+    }
+
+    // does not need the integer parameter for points
+    void RemoveEnemy(int _)
+    {
+        enemiesAlive = Mathf.Max(0,enemiesAlive-1);
     }
 
 
