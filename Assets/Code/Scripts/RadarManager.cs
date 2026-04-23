@@ -8,17 +8,14 @@ public class RadarManager : MonoBehaviour
     public Transform radarMaskTransform;
     public Transform radarVisionCastTransform;
     public GameObject blipPrefab;
-    public float radarRange;
-    public float radarRadius;
+    public float radarRange = 20.0f;
+    public float radarRadius = 100.0f;
 
     private Dictionary<RadarEntity, RectTransform> enemyBlips = new Dictionary<RadarEntity, RectTransform>();
 
     // Start is called first, used to set the player blip on the radar
     void Start()
     {
-        radarRadius = 50.0f;
-        radarRange = 10.0f;
-
         GameObject playerBlip = Instantiate(blipPrefab,radarMaskTransform);
         playerBlip.GetComponent<Image>().color = Color.white;
 

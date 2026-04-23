@@ -7,6 +7,7 @@ public class SpawnManager : MonoBehaviour
 
     // Events
     public System.Action<float> OnWaveTimerTick;
+    public System.Action OnWaveTimerEnd;
 
     // Game state information (get this from game later, probably)
     public bool canSpawnWave = true;
@@ -33,6 +34,9 @@ public class SpawnManager : MonoBehaviour
 
     // Health tracking for adding score
     private int playerHealth = 0;
+
+    // Coroutine reference
+    Coroutine runningWave;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -64,7 +68,7 @@ public class SpawnManager : MonoBehaviour
         {
             // Update wave FIRST so OnWaveComplete runs properly
             GameManager.Instance.IncrementWave();
-            StartCoroutine(RunWave());
+            runningWave = StartCoroutine(RunWave());
         }
     }
 
@@ -123,6 +127,8 @@ public class SpawnManager : MonoBehaviour
         }
 
         // TODO: end of wave logic
+        OnWaveTimerEnd?.Invoke();
+
         // Set canSpawnWave back to true
         canSpawnWave = true;
     }
@@ -196,6 +202,14 @@ public class SpawnManager : MonoBehaviour
     {
         // Sets enemiesAlive to 0 so new wave can start
         enemiesAlive = 0;
+        // Sets wave timer to end
+        if(runningWave != null)
+        {
+            // Stop and remov the coRoutine
+            StopCoroutine(runningWave);
+            runningWave = null;
+            canSpawnWave = true;
+        }
     }
 
     // does not need the integer parameter for points

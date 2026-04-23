@@ -1938,8 +1938,8 @@ MonoBehaviour:
   radarMaskTransform: {fileID: 388854945}
   radarVisionCastTransform: {fileID: 918841436}
   blipPrefab: {fileID: 2557819208216923869, guid: 607a83ca853299b869ffbd69d78f4e85, type: 3}
-  radarRange: 40
-  radarRadius: 80
+  radarRange: 20
+  radarRadius: 50
 --- !u!1 &918841435
 GameObject:
   m_ObjectHideFlags: 0

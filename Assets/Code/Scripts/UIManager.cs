@@ -41,6 +41,7 @@ public class UIManager : MonoBehaviour
 
         // Subscribe to SpawnManager events
         spawnManager.GetComponent<SpawnManager>().OnWaveTimerTick += TickWaveTimer;
+        spawnManager.GetComponent<SpawnManager>().OnWaveTimerEnd += EndWaveTimer;
 
         // Subscribe to player reload timer
         player.GetComponent<Player>().OnReloadTimerStart += StartReloadTimer;
@@ -123,6 +124,12 @@ public class UIManager : MonoBehaviour
         float percent = timeRemaining / maxWaveTimer;
 
         waveTimerFillRect.localScale = new Vector3(percent,1,1);
+    }
+
+    void EndWaveTimer()
+    {
+        // set the percent to zero
+        waveTimerFillRect.localScale = new Vector3(0,1,1);
     }
 
 
