@@ -10,7 +10,10 @@ public class UIManager : MonoBehaviour
     public GameObject hud;
     public GameObject gameOverUI;
 
-    // Reference to the UI object for wave text
+    // References to the UI object for wave slider + text
+    public Slider waveTimer;
+    private float maxWaveTimer;
+    public RectTransform waveTimerFillRect;
     public TextMeshProUGUI waveText;
     
     // Reference to the UI object for score text
@@ -31,14 +34,20 @@ public class UIManager : MonoBehaviour
     {
         // Init variables
         maxReload = player.GetComponent<Player>().GetReloadBuffer();
+        maxWaveTimer = spawnManager.GetComponent<SpawnManager>().waveTimer;
+
+        // Subscribe to game manager events
+        GameManager.Instance.OnGameRestart += SwapToGameUI;
+
+        // Subscribe to SpawnManager events
+        spawnManager.GetComponent<SpawnManager>().OnWaveTimerTick += TickWaveTimer;
 
         // Subscribe to player reload timer
         player.GetComponent<Player>().OnReloadTimerStart += StartReloadTimer;
         player.GetComponent<Player>().OnReloadTimerTick += TickReloadTimer;
         player.GetComponent<Player>().OnReloadTimerEnd += RemoveReloadTimer;
         player.GetComponent<Player>().OnDeath += SwapToGameOver;
-        // Subscribe to game manager events
-        GameManager.Instance.OnGameRestart += SwapToGameUI;
+        
     }
 
     // Update is called once per frame
@@ -53,6 +62,7 @@ public class UIManager : MonoBehaviour
         ammoText.text = player.GetComponent<Player>().currentAmmo + "/" + player.GetComponent<Player>().maxAmmo;
         // Set reload timer max every frame, but its current value is handled by the countdown co-routine in player class
         reloadTimer.maxValue = maxReload;
+        waveTimer.maxValue = maxWaveTimer;
     }
 
     void OnDisable()
@@ -106,6 +116,14 @@ public class UIManager : MonoBehaviour
         reloadTimer.gameObject.SetActive(false);
     }
 
+
+    void TickWaveTimer(float timeRemaining)
+    {
+        // Instead of counting down, shrink it by how big it is compared to its max
+        float percent = timeRemaining / maxWaveTimer;
+
+        waveTimerFillRect.localScale = new Vector3(percent,1,1);
+    }
 
 
 

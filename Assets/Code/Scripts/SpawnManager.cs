@@ -5,6 +5,9 @@ using System.Collections;
 public class SpawnManager : MonoBehaviour
 {
 
+    // Events
+    public System.Action<float> OnWaveTimerTick;
+
     // Game state information (get this from game later, probably)
     public bool canSpawnWave = true;
     public float waveTimer = 10.0f;
@@ -92,6 +95,7 @@ public class SpawnManager : MonoBehaviour
             timeCheck += Time.deltaTime;
 
             //TODO: invoke timer tick that ui manager listens to for graphical timer logic
+            OnWaveTimerTick?.Invoke(timeRemaining);
 
             // Get a random number between 1 and 50
             float rand = Random.Range(1,50);
