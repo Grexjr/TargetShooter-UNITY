@@ -35,9 +35,11 @@ public class Player : MonoBehaviour
     private float xRotation = 0.0f;
 
     // Timer variable for reload buffer, in seconds
-    private float reloadBuffer = 5.0f;
+    private float reloadBuffer = 1.5f;
     // Boolean for if reload is available
     private bool canReload = true;
+    // Boolean for if player can shoot (false during reload)
+    private bool canShoot = true;
     // CoRoutine for stopping the countdown if needed
     private Coroutine reloadCountdown;
 
@@ -84,6 +86,11 @@ public class Player : MonoBehaviour
     void OnDisable()
     {
         GameManager.Instance.OnGameRestart -= ResetStats;
+    }
+
+    public float GetReloadBuffer()
+    {
+        return reloadBuffer;
     }
 
     void OnTriggerEnter(Collider other)
@@ -137,12 +144,14 @@ public class Player : MonoBehaviour
 
         OnReloadTimerEnd?.Invoke();
         canReload = true;
+        canShoot = true;
+        Reload();
     }
     
     // Check if the player is shooting
     void CheckShooting() {
         // New input manager, returns bool if key pressed this frame
-        if(attackAction.WasPressedThisFrame()) {
+        if(attackAction.WasPressedThisFrame() && canShoot) {
             // Checks if the player has ammo above zero
             if(currentAmmo > 0)
             {
@@ -156,8 +165,8 @@ public class Player : MonoBehaviour
         }
         else if(reloadAction.WasPressedThisFrame() && canReload)
         {
-            Reload();
             canReload = false;
+            canShoot = false;
             reloadCountdown = StartCoroutine(DoReloadCountdown());
         }
     }

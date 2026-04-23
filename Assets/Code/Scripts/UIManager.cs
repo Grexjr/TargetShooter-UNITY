@@ -25,10 +25,13 @@ public class UIManager : MonoBehaviour
 
     // Reference to the reload timer
     public Slider reloadTimer;
-    private float maxReload = 5.0f;
+    private float maxReload;
 
     void Start()
     {
+        // Init variables
+        maxReload = player.GetComponent<Player>().GetReloadBuffer();
+
         // Subscribe to player reload timer
         player.GetComponent<Player>().OnReloadTimerStart += StartReloadTimer;
         player.GetComponent<Player>().OnReloadTimerTick += TickReloadTimer;
@@ -55,10 +58,14 @@ public class UIManager : MonoBehaviour
     void OnDisable()
     {
         // Unsubscribe to player reload timer
-        player.GetComponent<Player>().OnReloadTimerStart -= StartReloadTimer;
-        player.GetComponent<Player>().OnReloadTimerTick -= TickReloadTimer;
-        player.GetComponent<Player>().OnReloadTimerEnd -= RemoveReloadTimer;
-        player.GetComponent<Player>().OnDeath -= SwapToGameOver;
+        if(player != null)
+        {
+            player.GetComponent<Player>().OnReloadTimerStart -= StartReloadTimer;
+            player.GetComponent<Player>().OnReloadTimerTick -= TickReloadTimer;
+            player.GetComponent<Player>().OnReloadTimerEnd -= RemoveReloadTimer;
+            player.GetComponent<Player>().OnDeath -= SwapToGameOver;  
+        }
+        
         // Unsubscribe to game manager events
         GameManager.Instance.OnGameRestart -= SwapToGameUI;
     }

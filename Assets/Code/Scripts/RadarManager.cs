@@ -8,14 +8,17 @@ public class RadarManager : MonoBehaviour
     public Transform radarMaskTransform;
     public Transform radarVisionCastTransform;
     public GameObject blipPrefab;
-    public float radarRange = 50.0f;
-    public float radarRadius = 100.0f;
+    public float radarRange;
+    public float radarRadius;
 
     private Dictionary<RadarEntity, RectTransform> enemyBlips = new Dictionary<RadarEntity, RectTransform>();
 
     // Start is called first, used to set the player blip on the radar
     void Start()
     {
+        radarRadius = 50.0f;
+        radarRange = 10.0f;
+
         GameObject playerBlip = Instantiate(blipPrefab,radarMaskTransform);
         playerBlip.GetComponent<Image>().color = Color.white;
 
@@ -68,11 +71,13 @@ public class RadarManager : MonoBehaviour
 
         RectTransform blipRect = enemyBlips[enemy];
 
+        float clampLimit = radarRadius - 5f;
+
         // Check if the radar position is out of the radar radius, clamp to edge of radar
         // Square magnitude to avoid square root calculation on normal magnitude (pythagorean theorem)
-        if(radarPos.sqrMagnitude >= (radarRadius * radarRadius))
+        if(radarPos.sqrMagnitude >= (clampLimit * clampLimit))
         {
-            radarPos = radarPos.normalized * radarRadius;
+            radarPos = radarPos.normalized * clampLimit;
         }
 
         blipRect.anchoredPosition = radarPos;
