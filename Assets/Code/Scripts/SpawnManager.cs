@@ -1,6 +1,6 @@
-using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using System.Collections;
 
 public class SpawnManager : MonoBehaviour
 {
@@ -24,6 +24,9 @@ public class SpawnManager : MonoBehaviour
     private float xRange;
     private float yRange;
     private float zRange;
+
+    // Private variable for max concurrent enemies
+    private int maxConcurrentEnemies = 3;
 
     // Health tracking for adding score
     private int playerHealth = 0;
@@ -58,9 +61,8 @@ public class SpawnManager : MonoBehaviour
         {
             // Update wave FIRST so OnWaveComplete runs properly
             GameManager.Instance.IncrementWave();
-            canSpawnWave = SpawnWave();
+            StartCoroutine(RunWave());
         }
-        canSpawnWave = CheckWaveSpawn(enemiesAlive);
     }
 
     void OnDisable()
@@ -72,6 +74,56 @@ public class SpawnManager : MonoBehaviour
             GameManager.Instance.OnGameRestart -= ResetState;
         }
     }
+
+    IEnumerator RunWave()
+    {
+        // Set can spawn wave to false; no spawning wave while wave is running
+        canSpawnWave = false;
+
+        float timeRemaining = waveTimer;
+        // Time check, checks if enemy has spawned
+        float timeCheck = 0;
+        float maxWaiting = 5.0f;
+
+        while(timeRemaining >= 0)
+        {
+            // Code for running the wave; run chance to spawn enemy, increment enemies, when time is over we end the wave
+            timeRemaining -= Time.deltaTime;
+            timeCheck += Time.deltaTime;
+
+            //TODO: invoke timer tick that ui manager listens to for graphical timer logic
+
+            // Get a random number between 1 and 50
+            float rand = Random.Range(1,50);
+
+            // If random number is less than waveNum * difficulty scaling and less than max nonconcurrent enemies alive
+            if(rand < GameManager.Instance.waveNum * GameManager.Instance.difficultyScale && enemiesAlive < maxConcurrentEnemies)
+            {
+                // Then spawn enemy
+                SpawnEnemy(FindSpawnLocation());
+                // Set spawn timer to 0
+                timeCheck = 0;
+                // Increment enemies alive
+                enemiesAlive++;
+            }
+
+            // If no enemy spawned in 5 seconds, spawn an enemy regardless if less than max concurrent enemies alive
+            if(timeCheck >= maxWaiting && enemiesAlive <= maxConcurrentEnemies)
+            {
+                SpawnEnemy(FindSpawnLocation());
+                timeCheck = 0;
+                enemiesAlive++;
+            }
+
+            yield return null;
+        }
+
+        // TODO: end of wave logic
+        // Set canSpawnWave back to true
+        canSpawnWave = true;
+    }
+
+
 
     Vector3 FindSpawnLocation()
     {
@@ -100,8 +152,6 @@ public class SpawnManager : MonoBehaviour
     {
         // Instantiates an enemy to be facing straight up at a randomized spawn position
         Instantiate(enemyPrefab,spawnPos,Quaternion.Euler(-90f,0f,0f));
-        // Increments enemies alive value
-        enemiesAlive++;
     }
 
     // Spawns enemies in the wave, then returns false to set canSpawnWave to false
@@ -110,6 +160,7 @@ public class SpawnManager : MonoBehaviour
         // Adds score per wave cleared (basically any wave number after 1)
         // Only adds 100 score if player health is same as it was, i.e. player took no damage that round
         // TODO: Use a broadcast of spawn wave, either with or without extra points
+        //FIXME: move to game manager!!!!
         if(GameManager.Instance.waveNum > 1 && player.GetComponent<Player>().currentHealth == playerHealth)
         {
             GameManager.Instance.AddScore(100);

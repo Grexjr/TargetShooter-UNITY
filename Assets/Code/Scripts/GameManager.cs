@@ -14,6 +14,7 @@ public class GameManager : MonoBehaviour
     // Game state variables
     public int score = 0;
     public int waveNum = 0;
+    public int difficultyScale = 5;
     public bool isPaused = false;
     public bool isGameOver = false;
 
