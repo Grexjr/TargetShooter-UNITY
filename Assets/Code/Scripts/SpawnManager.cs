@@ -7,6 +7,7 @@ public class SpawnManager : MonoBehaviour
 
     // Game state information (get this from game later, probably)
     public bool canSpawnWave = true;
+    public float waveTimer = 10.0f;
     public float buffer = 15.0f;
 
     // Reference to the ground to provide ranges of spawning
