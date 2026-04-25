@@ -155,7 +155,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 100, y: 0}
+  m_AnchoredPosition: {x: 140, y: 0}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &121188042
@@ -292,11 +292,11 @@ RectTransform:
   - {fileID: 2051360698}
   m_Father: {fileID: 330278298}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 1}
-  m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: -90, y: 0}
+  m_AnchorMin: {x: 1, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 160, y: 50}
-  m_Pivot: {x: 0.5, y: 1}
+  m_Pivot: {x: 1, y: 1}
 --- !u!114 &203338408
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1796,10 +1796,10 @@ RectTransform:
   - {fileID: 648224217}
   m_Father: {fileID: 546135415}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0.25}
-  m_AnchorMax: {x: 1, y: 0.75}
+  m_AnchorMin: {x: 0, y: 0.5}
+  m_AnchorMax: {x: 1, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 38}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &832575517
 GameObject:
@@ -1939,7 +1939,7 @@ MonoBehaviour:
   radarMaskTransform: {fileID: 388854945}
   radarVisionCastTransform: {fileID: 918841436}
   blipPrefab: {fileID: 2557819208216923869, guid: 607a83ca853299b869ffbd69d78f4e85, type: 3}
-  radarRange: 20
+  radarRange: 30
   radarRadius: 50
 --- !u!1 &918841435
 GameObject:
@@ -2716,7 +2716,7 @@ MonoBehaviour:
   currentHealth: 0
   maxAmmo: 0
   currentAmmo: 0
-  sensitivity: 1
+  sensitivity: 0.5
   bulletPrefab: {fileID: 1309834558876177053, guid: 75667fd8db5bda0fa8be603e2248949d, type: 3}
 --- !u!1 &1377191579
 GameObject:

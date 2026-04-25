@@ -1,4 +1,5 @@
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -40,6 +41,7 @@ public class UIManager : MonoBehaviour
         GameManager.Instance.OnGameRestart += SwapToGameUI;
 
         // Subscribe to SpawnManager events
+        spawnManager.GetComponent<SpawnManager>().OnWaveTimerStart += StartWaveTimer;
         spawnManager.GetComponent<SpawnManager>().OnWaveTimerTick += TickWaveTimer;
         spawnManager.GetComponent<SpawnManager>().OnWaveTimerEnd += EndWaveTimer;
 
@@ -63,6 +65,7 @@ public class UIManager : MonoBehaviour
         ammoText.text = player.GetComponent<Player>().currentAmmo + "/" + player.GetComponent<Player>().maxAmmo;
         // Set reload timer max every frame, but its current value is handled by the countdown co-routine in player class
         reloadTimer.maxValue = maxReload;
+        // Wave timer, stays same size the whole time
         waveTimer.maxValue = maxWaveTimer;
     }
 
@@ -115,6 +118,13 @@ public class UIManager : MonoBehaviour
     {
         // Remove temporary timer from HUD
         reloadTimer.gameObject.SetActive(false);
+    }
+
+    void StartWaveTimer()
+    {
+        // Refresh max value
+        maxWaveTimer = spawnManager.GetComponent<SpawnManager>().waveTimer;
+        waveTimer.maxValue = maxWaveTimer;
     }
 
 
