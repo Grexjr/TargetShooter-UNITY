@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using System.Collections;
 
@@ -78,8 +77,9 @@ public class Enemy : MonoBehaviour
     // Method to move the enemy upwards from spawn position into 'attack' range
     IEnumerator MoveIntoPosition()
     {
+        float yPos = Random.Range(3.0f,15.0f);
         // Moves up at half speed until it hits the y ceiling, then stops
-        while(transform.position.y < 10.0f)
+        while(transform.position.y < yPos)
         {
             transform.Translate(Vector3.forward * (int)(baseEnemySpeed * 0.5) * Time.deltaTime);
             yield return null;

@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 4765068806385877715}
   - component: {fileID: -957300228094219549}
   - component: {fileID: 8666088114590758654}
+  - component: {fileID: -1570475190828030810}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Enemy
@@ -153,4 +154,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 418fef8509775ab5ab33a12ad98dd87f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
+  player: {fileID: 0}
   baseEnemySpeed: 10
+  pointValue: 10
+--- !u!114 &-1570475190828030810
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9004630157686622258}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e701e1df5a42ed2087061c59dc57801, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RadarEntity

@@ -10,10 +10,12 @@ public class GameManager : MonoBehaviour
 
     // Essential game objects
     public GameObject player;
+    public GameObject spawnManager; // TODO: Refactor this
 
     // Game state variables
     public int score = 0;
     public int waveNum = 0;
+    public int difficultyScale = 5;
     public bool isPaused = false;
     public bool isGameOver = false;
 
@@ -59,6 +61,9 @@ public class GameManager : MonoBehaviour
         // Subscribe to static enemy broadcast
         // NOTE: parameters are passed implicitly by the event--cool!
         Enemy.OnEnemyDeath += AddScore;
+        spawnManager.GetComponent<SpawnManager>().OnWaveEnd += (int score) => {
+            AddScore(score);
+        };
     }
 
     void Update()

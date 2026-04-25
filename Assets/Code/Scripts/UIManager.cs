@@ -1,4 +1,5 @@
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,7 +11,10 @@ public class UIManager : MonoBehaviour
     public GameObject hud;
     public GameObject gameOverUI;
 
-    // Reference to the UI object for wave text
+    // References to the UI object for wave slider + text
+    public Slider waveTimer;
+    private float maxWaveTimer;
+    public RectTransform waveTimerFillRect;
     public TextMeshProUGUI waveText;
     
     // Reference to the UI object for score text
@@ -25,17 +29,28 @@ public class UIManager : MonoBehaviour
 
     // Reference to the reload timer
     public Slider reloadTimer;
-    private float maxReload = 5.0f;
+    private float maxReload;
 
     void Start()
     {
+        // Init variables
+        maxReload = player.GetComponent<Player>().GetReloadBuffer();
+        maxWaveTimer = spawnManager.GetComponent<SpawnManager>().waveTimer;
+
+        // Subscribe to game manager events
+        GameManager.Instance.OnGameRestart += SwapToGameUI;
+
+        // Subscribe to SpawnManager events
+        spawnManager.GetComponent<SpawnManager>().OnWaveTimerStart += StartWaveTimer;
+        spawnManager.GetComponent<SpawnManager>().OnWaveTimerTick += TickWaveTimer;
+        spawnManager.GetComponent<SpawnManager>().OnWaveTimerEnd += EndWaveTimer;
+
         // Subscribe to player reload timer
         player.GetComponent<Player>().OnReloadTimerStart += StartReloadTimer;
         player.GetComponent<Player>().OnReloadTimerTick += TickReloadTimer;
         player.GetComponent<Player>().OnReloadTimerEnd += RemoveReloadTimer;
         player.GetComponent<Player>().OnDeath += SwapToGameOver;
-        // Subscribe to game manager events
-        GameManager.Instance.OnGameRestart += SwapToGameUI;
+        
     }
 
     // Update is called once per frame
@@ -50,15 +65,21 @@ public class UIManager : MonoBehaviour
         ammoText.text = player.GetComponent<Player>().currentAmmo + "/" + player.GetComponent<Player>().maxAmmo;
         // Set reload timer max every frame, but its current value is handled by the countdown co-routine in player class
         reloadTimer.maxValue = maxReload;
+        // Wave timer, stays same size the whole time
+        waveTimer.maxValue = maxWaveTimer;
     }
 
     void OnDisable()
     {
         // Unsubscribe to player reload timer
-        player.GetComponent<Player>().OnReloadTimerStart -= StartReloadTimer;
-        player.GetComponent<Player>().OnReloadTimerTick -= TickReloadTimer;
-        player.GetComponent<Player>().OnReloadTimerEnd -= RemoveReloadTimer;
-        player.GetComponent<Player>().OnDeath -= SwapToGameOver;
+        if(player != null)
+        {
+            player.GetComponent<Player>().OnReloadTimerStart -= StartReloadTimer;
+            player.GetComponent<Player>().OnReloadTimerTick -= TickReloadTimer;
+            player.GetComponent<Player>().OnReloadTimerEnd -= RemoveReloadTimer;
+            player.GetComponent<Player>().OnDeath -= SwapToGameOver;  
+        }
+        
         // Unsubscribe to game manager events
         GameManager.Instance.OnGameRestart -= SwapToGameUI;
     }
@@ -99,6 +120,27 @@ public class UIManager : MonoBehaviour
         reloadTimer.gameObject.SetActive(false);
     }
 
+    void StartWaveTimer()
+    {
+        // Refresh max value
+        maxWaveTimer = spawnManager.GetComponent<SpawnManager>().waveTimer;
+        waveTimer.maxValue = maxWaveTimer;
+    }
+
+
+    void TickWaveTimer(float timeRemaining)
+    {
+        // Instead of counting down, shrink it by how big it is compared to its max
+        float percent = timeRemaining / maxWaveTimer;
+
+        waveTimerFillRect.localScale = new Vector3(percent,1,1);
+    }
+
+    void EndWaveTimer()
+    {
+        // set the percent to zero
+        waveTimerFillRect.localScale = new Vector3(0,1,1);
+    }
 
 
 

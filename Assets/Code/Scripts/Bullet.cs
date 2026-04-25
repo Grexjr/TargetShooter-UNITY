@@ -12,7 +12,7 @@ public class Bullet : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+        GameManager.Instance.OnGameRestart += Cleanup;
     }
 
     // Update is called once per frame
@@ -22,6 +22,14 @@ public class Bullet : MonoBehaviour
         transform.Translate(Vector3.forward * bulletSpeed * Time.deltaTime);
 
         CheckBulletRemove();
+    }
+
+    void OnDisable()
+    {
+        if(GameManager.Instance != null)
+        {
+            GameManager.Instance.OnGameRestart -= Cleanup;
+        }
     }
 
     void CheckBulletRemove()
@@ -45,5 +53,11 @@ public class Bullet : MonoBehaviour
             Destroy(gameObject);
         }
 
+    }
+
+    // Called when the game resets
+    void Cleanup()
+    {
+        Destroy(gameObject);
     }
 }
