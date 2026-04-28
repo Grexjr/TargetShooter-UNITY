@@ -12,6 +12,7 @@ all enemies to move to the next wave and increase your score.
 <p>Use Powerup - space bar</p>
 <p>Pause - p</p>
 <p>Reload - r</p>
+<p>Quit - q</p>
 
 
 <h3>FEATURES:</h3>

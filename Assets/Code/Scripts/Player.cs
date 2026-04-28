@@ -30,6 +30,7 @@ public class Player : MonoBehaviour
     private InputAction attackAction;
     private InputAction lookAction;
     private InputAction reloadAction;
+    private InputAction quitAction;
 
     // Rotation values for looking around
     private float xRotation = 0.0f;
@@ -64,6 +65,7 @@ public class Player : MonoBehaviour
         attackAction = InputSystem.actions.FindActionMap("Player").FindAction("Attack");
         lookAction = InputSystem.actions.FindActionMap("Player").FindAction("Look");
         reloadAction = InputSystem.actions.FindActionMap("Player").FindAction("Reload");
+        quitAction = InputSystem.actions.FindActionMap("Player").FindAction("Quit");
         
         // MUST enable the action (uses inline null check with ? operator)
         attackAction?.Enable(); 
@@ -80,7 +82,9 @@ public class Player : MonoBehaviour
         {
             Look();
             CheckShooting();   
-        }        
+        }
+        // Always check quit even if paused
+        CheckQuit();        
     }
 
     void OnDisable()
@@ -206,6 +210,16 @@ public class Player : MonoBehaviour
             OnReloadTimerEnd?.Invoke();
         }
         
+    }
+
+    // Need a better way to do this to be honest
+    void CheckQuit()
+    {
+        if (quitAction.WasPressedThisFrame())
+        {
+            Application.Quit();
+            Debug.Log("Application Quit");
+        }
     }
     
 }
