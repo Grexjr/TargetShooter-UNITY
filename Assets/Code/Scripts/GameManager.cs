@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -11,6 +13,9 @@ public class GameManager : MonoBehaviour
     // Essential game objects
     public GameObject player;
     public GameObject spawnManager; // TODO: Refactor this
+    public GameObject gameUI;
+    public GameObject pauseUI;
+    public Slider sensitivitySlider;
 
     // Game state variables
     public int score = 0;
@@ -64,6 +69,12 @@ public class GameManager : MonoBehaviour
         spawnManager.GetComponent<SpawnManager>().OnWaveEnd += (int score) => {
             AddScore(score);
         };
+
+        if(sensitivitySlider != null)
+        {
+            sensitivitySlider.value = PersistentManager.Sensitivity;
+            sensitivitySlider.onValueChanged.AddListener(SetSensitivity);
+        }
     }
 
     void Update()
@@ -108,6 +119,22 @@ public class GameManager : MonoBehaviour
         // TODO: Also add wraps for if(Time.timeScale > 0) for all timers, like shooting countdown
         // Allows cursor movement
         Cursor.lockState = CursorLockMode.Confined;
+
+        // Sets the game UI to inactive
+        gameUI.SetActive(false);
+        pauseUI.SetActive(true);
+    }
+
+    public void SetSensitivity(float value)
+    {
+        PersistentManager.Sensitivity = value;
+        PlayerPrefs.SetFloat("MouseSensitivity",value);
+    }
+
+    public void QuitToMenu()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("MainMenu");
     }
 
     public void UnPause()
@@ -115,6 +142,8 @@ public class GameManager : MonoBehaviour
         isPaused = false;
         Time.timeScale = 1.0f;
         Cursor.lockState = CursorLockMode.Locked;
+        gameUI.SetActive(true);
+        pauseUI.SetActive(false);
     }
 
     public void EndGame()

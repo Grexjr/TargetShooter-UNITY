@@ -181,8 +181,8 @@ public class Player : MonoBehaviour
         Vector2 look = lookAction.ReadValue<Vector2>();
 
         // Scale by the sensitivity
-        float mouseX = look.x * sensitivity;
-        float mouseY = look.y * sensitivity;
+        float mouseX = look.x * PersistentManager.Sensitivity;
+        float mouseY = look.y * PersistentManager.Sensitivity;
 
         // VERTICAL
         // Modifly private float to clamp it
