@@ -103,7 +103,7 @@ public class SpawnManager : MonoBehaviour
 
         // Wavescore for now equals zero
         int waveScore = 0;
-        int playerStartHealth = player.GetComponent<Player>().currentHealth;
+        int playerStartHealth = player.GetComponent<Health>().currentHealth;
 
         // Reset enemies spawned this wave
         enemiesSpawnedThisWave = 0;
@@ -176,7 +176,7 @@ public class SpawnManager : MonoBehaviour
 
         // Calculate waveScore for now based on player health: 
         // TODO: do something else
-        int playerEndHealth = player.GetComponent<Player>().currentHealth;
+        int playerEndHealth = player.GetComponent<Health>().currentHealth;
         if(playerStartHealth == playerEndHealth)
         {
             waveScore = 100; // TODO: move this into variable so it can be tweaked

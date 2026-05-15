@@ -4,8 +4,18 @@ using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 using System.Collections;
 
+[RequireComponent(typeof(Health))]
+[RequireComponent(typeof(PlayerInputHandler))]
 public class Player : MonoBehaviour
 {
+
+    // Player states
+    private enum PlayerState
+    {
+        ALIVE, // just generic alive
+        RELOADING, // when alive and reloading
+        DEAD // when dead
+    }
 
     // Broadcasts
     public System.Action OnReloadTimerStart; // broadcast to: HUDManager
@@ -13,44 +23,34 @@ public class Player : MonoBehaviour
     public System.Action OnReloadTimerEnd; // broadcast to: HUDManager
     public System.Action OnDeath; // broadcast to: GameManager
 
-    // References to other necessary objects
-    public Transform cameraTransform;
+    // Necessary player components
+    private Health health;
+    private PlayerInputHandler input;
+    [SerializeField] private FirstPersonCamera playerCamera;
 
-    // Basic necessary player stats: health and ammo
-    public int maxHealth, currentHealth;
+    // Necessary player variables
+    private PlayerState state;
+
     public int maxAmmo, currentAmmo;
-    
-    // Controls variables
-    public float sensitivity = 0.5f;
 
     // Bullet reference
     public GameObject bulletPrefab;
-    
-    // Input maps
-    private InputAction attackAction;
-    private InputAction lookAction;
-    private InputAction reloadAction;
-    private InputAction quitAction;
 
-    // Rotation values for looking around
-    private float xRotation = 0.0f;
 
     // Timer variable for reload buffer, in seconds
     private float reloadBuffer = 1.5f;
-    // Boolean for if reload is available
-    private bool canReload = true;
-    // Boolean for if player can shoot (false during reload)
-    private bool canShoot = true;
     // CoRoutine for stopping the countdown if needed
     private Coroutine reloadCountdown;
 
     // Initialization, guaranteed to happen first
     void Awake()
     {
-        // Initialize player values
-        maxHealth = 10;
+        // Basic initialization
+        health = GetComponent<Health>();
+        input = GetComponent<PlayerInputHandler>();
+        state = PlayerState.ALIVE;
+
         maxAmmo = 5;
-        currentHealth = maxHealth;
         currentAmmo = maxAmmo;
 
         // Subscribe to game manager broadcasts and call reset state when game is restarted
@@ -61,35 +61,30 @@ public class Player : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        // Save reference to the input system's binding of the attack action
-        attackAction = InputSystem.actions.FindActionMap("Player").FindAction("Attack");
-        lookAction = InputSystem.actions.FindActionMap("Player").FindAction("Look");
-        reloadAction = InputSystem.actions.FindActionMap("Player").FindAction("Reload");
-        quitAction = InputSystem.actions.FindActionMap("Player").FindAction("Quit");
-        
-        // MUST enable the action (uses inline null check with ? operator)
-        attackAction?.Enable(); 
-        lookAction?.Enable();
-        reloadAction?.Enable();
+        // Subscribe to input events
+        input.onAttack += Shoot;
+        input.onReload += DoReload;
     }
 
     // Update is called once per frame
     void Update()
     {
+        // Get the look input vector
+        Vector2 look = input.LookInput;
+        
         // FIXME: This is part of the temporary fix; this pauses the game, in future we should change this to be a better
         // pausing system.
         if(Time.timeScale > 0)
         {
-            Look();
-            CheckShooting();   
+            Look(look.x,look.y);  
         }
-        // Always check quit even if paused
-        CheckQuit();        
     }
 
     void OnDisable()
     {
         GameManager.Instance.OnGameRestart -= ResetStats;
+        input.onAttack -= Shoot;
+        input.onReload -= DoReload;
     }
 
     public float GetReloadBuffer()
@@ -108,10 +103,9 @@ public class Player : MonoBehaviour
     public void TakeDamage()
     {
         // Reduce health
-        currentHealth -= 1;
-        currentHealth = Math.Max(0,currentHealth);
+        health.TakeDamage(1);
         // Broadcast event that player has died if health == 0
-        if(currentHealth == 0)
+        if(health.CheckDeath())
         {
             OnDeath?.Invoke();
         }
@@ -147,60 +141,44 @@ public class Player : MonoBehaviour
         }
 
         OnReloadTimerEnd?.Invoke();
-        canReload = true;
-        canShoot = true;
+        state = PlayerState.ALIVE;
         Reload();
     }
-    
-    // Check if the player is shooting
-    void CheckShooting() {
-        // New input manager, returns bool if key pressed this frame
-        if(attackAction.WasPressedThisFrame() && canShoot) {
-            // Checks if the player has ammo above zero
-            if(currentAmmo > 0)
-            {
-                // If so, Creates a bullt prefab at the fire point (player body) position with offset, default rotation (no rotation)
-                Instantiate(bulletPrefab,cameraTransform.position,cameraTransform.rotation);
-                ReduceAmmo();
-            }
 
-            // TODO: some indication that player is out of ammo
-                   
-        }
-        else if(reloadAction.WasPressedThisFrame() && canReload)
+    void Shoot()
+    {
+        if(state != PlayerState.RELOADING) 
         {
-            canReload = false;
-            canShoot = false;
-            reloadCountdown = StartCoroutine(DoReloadCountdown());
+            Instantiate(bulletPrefab,playerCamera.transform.position,playerCamera.transform.rotation);
+            ReduceAmmo();
         }
     }
 
-    void Look()
+    void DoReload()
     {
-        // Get the look input vector
-        Vector2 look = lookAction.ReadValue<Vector2>();
+        state = PlayerState.RELOADING;
+        reloadCountdown = StartCoroutine(DoReloadCountdown());
+    }
 
+    void Look(float mouseDeltaX, float mouseDeltaY)
+    {
         // Scale by the sensitivity
-        float mouseX = look.x * PersistentManager.Sensitivity;
-        float mouseY = look.y * PersistentManager.Sensitivity;
+        float mouseX = mouseDeltaX * PersistentManager.Sensitivity;
+        float mouseY = mouseDeltaY * PersistentManager.Sensitivity;
 
-        // VERTICAL
-        // Modifly private float to clamp it
-        xRotation -= mouseY;
-        xRotation = Mathf.Clamp(xRotation,-90f,90f);
-
-        // Rotate camera locally
-        cameraTransform.localRotation = Quaternion.Euler(xRotation,0f,0f);
-
-        // HORIZONTAL
+        // Rotate player horizontally
         transform.Rotate(Vector3.up * mouseX);
+
+        // Update the camera
+        playerCamera.UpdatePitchAndYaw(mouseX,mouseY);
     }
 
     void ResetStats()
     {
-        currentHealth = maxHealth;
+        state = PlayerState.ALIVE;
+
+        health.ResetHealth();
         currentAmmo = maxAmmo;
-        canReload = true;
         if(reloadCountdown != null)
         {
             // Stop and remov the coRoutine
@@ -211,15 +189,4 @@ public class Player : MonoBehaviour
         }
         
     }
-
-    // Need a better way to do this to be honest
-    void CheckQuit()
-    {
-        if (quitAction.WasPressedThisFrame())
-        {
-            Application.Quit();
-            Debug.Log("Application Quit");
-        }
-    }
-    
 }
