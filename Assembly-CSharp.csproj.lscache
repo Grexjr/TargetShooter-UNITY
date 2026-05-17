@@ -60,10 +60,12 @@ Assets/Code/Scripts/
  Player/
   PlayerController.cs
   PlayerInputHandler.cs
- RadarEntity.cs
- RadarManager.cs
  SpawnManager.cs
- UIManager.cs
+ UI/
+  HealthBarUI.cs
+  RadarEntity.cs
+  RadarManager.cs
+  UIManager.cs
  Weapons/
   Bullet.cs
   Weapon.cs

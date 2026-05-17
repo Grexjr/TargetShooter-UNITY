@@ -16,9 +16,14 @@ public class PlayerController : MonoBehaviour
     private FirstPersonCamera playerCamera;
 
     // PLAYER EVENTS
+
+    // Weapon events
     public System.Action OnReloadTimerStart;
     public System.Action<float> OnReloadTimerTick;
     public System.Action OnReloadTimerEnd;
+
+    // Health events
+    public System.Action onHealthChanged;
     public System.Action OnDeath;
 
     // PLAYER VARIABLES

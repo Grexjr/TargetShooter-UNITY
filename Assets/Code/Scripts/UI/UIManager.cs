@@ -20,10 +20,6 @@ public class UIManager : MonoBehaviour
     // Reference to the UI object for score text
     public TextMeshProUGUI scoreText;
 
-    // Reference to the UI object for slider value and text value
-    public Slider healthBar;
-    public TextMeshProUGUI healthText;
-
     // Reference to the UI object for ammo value
     public TextMeshProUGUI ammoText;
 
@@ -59,9 +55,6 @@ public class UIManager : MonoBehaviour
         // Every frame, keep the wave text updated
         waveText.text = "Wave: " + GameManager.Instance.waveNum;
         scoreText.text = "Score: " + GameManager.Instance.score;
-        healthBar.value = player.GetComponent<Health>().currentHealth;
-        healthBar.maxValue = player.GetComponent<Health>().maxHealth;
-        healthText.text = player.GetComponent<Health>().currentHealth + "/" + player.GetComponent<Health>().maxHealth;
         ammoText.text = player.GetComponent<PlayerController>().currentAmmo + "/" + player.GetComponent<PlayerController>().maxAmmo;
         // Set reload timer max every frame, but its current value is handled by the countdown co-routine in player class
         reloadTimer.maxValue = maxReload;
