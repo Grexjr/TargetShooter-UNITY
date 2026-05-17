@@ -34,7 +34,7 @@ public class UIManager : MonoBehaviour
     void Start()
     {
         // Init variables
-        maxReload = player.GetComponent<PlayerController>().GetReloadBuffer();
+        maxReload = player.GetComponent<PlayerController>().GetReloadTime();
         maxWaveTimer = spawnManager.GetComponent<SpawnManager>().waveTimer;
 
         // Subscribe to game manager events

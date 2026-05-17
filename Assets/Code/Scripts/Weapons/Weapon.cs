@@ -24,6 +24,7 @@ public class Weapon : MonoBehaviour
     public System.Action onReloadStart;
     public System.Action<float> onReloadTick;
     public System.Action onReloadEnd;
+    public System.Action<int,int> onAmmoChanged;
     //TODO: Event for firing in case we want to add sound, etc
 
     // RELOAD VARIABLES
@@ -31,6 +32,11 @@ public class Weapon : MonoBehaviour
     private int currentAmmo;
     // Variable for reference to coRoutine in case reset is called
     private Coroutine reloadRoutine;
+
+    void Awake()
+    {
+        RefillAmmo(); 
+    }
 
     // Getters
     public Coroutine GetReloadRoutine()
@@ -48,8 +54,13 @@ public class Weapon : MonoBehaviour
         return currentAmmo;
     }
 
+    public float GetReloadTime()
+    {
+        return reloadTime;
+    }
+
     // Method to fire gun
-    public void Fire(Transform cameraTransform, Vector3 targetPoint)
+    public void Fire(Vector3 targetPoint)
     {
         // If time has not passed enough for next fire time, return early (no shoot)
         if(Time.time < nextFireTime) return;
@@ -61,7 +72,7 @@ public class Weapon : MonoBehaviour
         if(weaponState == WeaponState.RELOADING) return;
 
         // Otherwise, fire
-        ExecuteShot(cameraTransform, targetPoint);
+        ExecuteShot(targetPoint);
     }
 
     // TODO: Reload function
@@ -115,6 +126,7 @@ public class Weapon : MonoBehaviour
     private void RefillAmmo()
     {
         currentAmmo = maxAmmo;
+        onAmmoChanged?.Invoke(currentAmmo,maxAmmo);
     }
 
     /// <summary>
@@ -127,10 +139,11 @@ public class Weapon : MonoBehaviour
         return true;
     }
 
-    private void ExecuteShot(Transform cameraTransform, Vector3 targetPoint)
+    private void ExecuteShot(Vector3 targetPoint)
     {
         // Reduce ammo, instantiate a bullet at the muzzle position and then increment next fire time for next cooldown
         currentAmmo--;
+        onAmmoChanged?.Invoke(currentAmmo,maxAmmo);
 
         nextFireTime = Time.time + fireRate;
 
@@ -138,11 +151,6 @@ public class Weapon : MonoBehaviour
         Quaternion targetRotation = Quaternion.LookRotation(directionToTarget);
 
         Instantiate(bulletPrefab,muzzle.position,targetRotation);
-    }
-
-    void Awake()
-    {
-        RefillAmmo(); 
     }
 
 }

@@ -10,22 +10,19 @@ public class PlayerController : MonoBehaviour
 {
 
     // PLAYER CHARACTERISTICS
+    [SerializeField] private Weapon currentWeapon;
     private Health health;
     private PlayerInputHandler input;
-    [SerializeField] private FirstPersonCamera playerCamera;
-    [SerializeField] private Weapon currentWeapon;
+    private FirstPersonCamera playerCamera;
 
     // PLAYER EVENTS
-    public System.Action OnReloadTimerStart; // broadcast to: HUDManager
-    public System.Action<float> OnReloadTimerTick; // broadcast to: HUDManager
-    public System.Action OnReloadTimerEnd; // broadcast to: HUDManager
-    public System.Action OnDeath; // broadcast to: GameManager
+    public System.Action OnReloadTimerStart;
+    public System.Action<float> OnReloadTimerTick;
+    public System.Action OnReloadTimerEnd;
+    public System.Action OnDeath;
 
     // PLAYER VARIABLES
     public int maxAmmo, currentAmmo;
-
-    // Timer variable for reload buffer, in seconds
-    private float reloadBuffer = 1.5f;
 
     // Initialization, guaranteed to happen first
     void Awake()
@@ -33,6 +30,7 @@ public class PlayerController : MonoBehaviour
         // Basic initialization
         health = GetComponent<Health>();
         input = GetComponent<PlayerInputHandler>();
+        playerCamera = GetComponentInChildren<FirstPersonCamera>();
 
         // Subscribe to game manager broadcasts and call reset state when game is restarted
         GameManager.Instance.OnGameRestart += ResetState;
@@ -53,6 +51,7 @@ public class PlayerController : MonoBehaviour
             currentWeapon.onReloadStart += BubbleReloadStart;
             currentWeapon.onReloadTick += BubbleReloadTick;
             currentWeapon.onReloadEnd += BubbleReloadEnd;
+            currentWeapon.onAmmoChanged += UpdatePlayerAmmo;
             // Initialize weapon information
             maxAmmo = currentWeapon.GetMaxAmmo();
             currentAmmo = currentWeapon.GetCurrentAmmo();
@@ -85,12 +84,8 @@ public class PlayerController : MonoBehaviour
             currentWeapon.onReloadStart -= BubbleReloadStart;
             currentWeapon.onReloadTick -= BubbleReloadTick;
             currentWeapon.onReloadEnd -= BubbleReloadEnd;
+            currentWeapon.onAmmoChanged -= UpdatePlayerAmmo;
         }
-    }
-
-    public float GetReloadBuffer()
-    {
-        return reloadBuffer;
     }
 
     void OnTriggerEnter(Collider other)
@@ -99,6 +94,12 @@ public class PlayerController : MonoBehaviour
         {
             TakeDamage(1);
         }
+    }
+
+    // GETTERS
+    public float GetReloadTime()
+    {
+        return currentWeapon.GetReloadTime();
     }
 
     public void TakeDamage(int damage)
@@ -142,7 +143,7 @@ public class PlayerController : MonoBehaviour
         }
 
         // Pass target point and camera transform to gun's fire method
-        currentWeapon.Fire(playerCamera.transform,targetPoint);
+        currentWeapon.Fire(targetPoint);
         currentAmmo = currentWeapon.GetCurrentAmmo();   
     }
 
@@ -171,6 +172,12 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private void UpdatePlayerAmmo(int current, int max)
+    {
+        currentAmmo = current;
+        maxAmmo = max;
+    }
+
     private void BubbleReloadStart()
     {
         OnReloadTimerStart?.Invoke();
@@ -184,8 +191,6 @@ public class PlayerController : MonoBehaviour
     private void BubbleReloadEnd()
     {
         OnReloadTimerEnd?.Invoke();
-        //TODO Change to a single function update ammo/update weapon
-        currentAmmo = currentWeapon.GetCurrentAmmo();
     }
 
 
