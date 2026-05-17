@@ -67,7 +67,7 @@ public class PlayerController : MonoBehaviour
             currentWeapon.onReloadStart += BubbleReloadStart;
             currentWeapon.onReloadTick += BubbleReloadTick;
             currentWeapon.onReloadEnd += BubbleReloadEnd;
-            currentWeapon.onAmmoChanged += UpdatePlayerAmmo;  
+            currentWeapon.onAmmoChanged += BubbleAmmoChanged;  
         }
     }
 
@@ -97,7 +97,7 @@ public class PlayerController : MonoBehaviour
             currentWeapon.onReloadStart -= BubbleReloadStart;
             currentWeapon.onReloadTick -= BubbleReloadTick;
             currentWeapon.onReloadEnd -= BubbleReloadEnd;
-            currentWeapon.onAmmoChanged -= UpdatePlayerAmmo;
+            currentWeapon.onAmmoChanged -= BubbleAmmoChanged;
         }
     }
 
@@ -195,13 +195,6 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void UpdatePlayerAmmo(int current, int max)
-    {
-        currentAmmo = current;
-        maxAmmo = max;
-        onAmmoChanged?.Invoke(current,max);
-    }
-
     private void BubbleReloadStart()
     {
         OnReloadTimerStart?.Invoke();
@@ -215,6 +208,16 @@ public class PlayerController : MonoBehaviour
     private void BubbleReloadEnd()
     {
         OnReloadTimerEnd?.Invoke();
+    }
+
+    private void BubbleAmmoChanged(int current, int max)
+    {
+        // Code we need to do at this step: set variables
+        currentAmmo = current;
+        maxAmmo = max;
+
+        // Bubble up the event
+        onAmmoChanged?.Invoke(current,max);
     }
 
 
