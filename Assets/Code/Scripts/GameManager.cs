@@ -56,7 +56,7 @@ public class GameManager : MonoBehaviour
         if(player != null)
         {
             // Subscribe to the on death event of the player
-            player.GetComponent<Player>().OnDeath += EndGame;
+            player.GetComponent<PlayerController>().OnDeath += EndGame;
         } 
         else
         {
@@ -95,7 +95,7 @@ public class GameManager : MonoBehaviour
     {
         if(player != null)
         {
-            player.GetComponent<Player>().OnDeath -= EndGame;
+            player.GetComponent<PlayerController>().OnDeath -= EndGame;
         }
         Enemy.OnEnemyDeath -= AddScore;
     }

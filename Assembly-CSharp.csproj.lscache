@@ -58,7 +58,7 @@ Assets/Code/Scripts/
  MainMenuController.cs
  PersistentManager.cs
  Player/
-  Player.cs
+  PlayerController.cs
   PlayerInputHandler.cs
  RadarEntity.cs
  RadarManager.cs

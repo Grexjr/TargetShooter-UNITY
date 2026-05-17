@@ -34,7 +34,7 @@ public class UIManager : MonoBehaviour
     void Start()
     {
         // Init variables
-        maxReload = player.GetComponent<Player>().GetReloadBuffer();
+        maxReload = player.GetComponent<PlayerController>().GetReloadBuffer();
         maxWaveTimer = spawnManager.GetComponent<SpawnManager>().waveTimer;
 
         // Subscribe to game manager events
@@ -46,10 +46,10 @@ public class UIManager : MonoBehaviour
         spawnManager.GetComponent<SpawnManager>().OnWaveTimerEnd += EndWaveTimer;
 
         // Subscribe to player reload timer
-        player.GetComponent<Player>().OnReloadTimerStart += StartReloadTimer;
-        player.GetComponent<Player>().OnReloadTimerTick += TickReloadTimer;
-        player.GetComponent<Player>().OnReloadTimerEnd += RemoveReloadTimer;
-        player.GetComponent<Player>().OnDeath += SwapToGameOver;
+        player.GetComponent<PlayerController>().OnReloadTimerStart += StartReloadTimer;
+        player.GetComponent<PlayerController>().OnReloadTimerTick += TickReloadTimer;
+        player.GetComponent<PlayerController>().OnReloadTimerEnd += RemoveReloadTimer;
+        player.GetComponent<PlayerController>().OnDeath += SwapToGameOver;
         
     }
 
@@ -62,7 +62,7 @@ public class UIManager : MonoBehaviour
         healthBar.value = player.GetComponent<Health>().currentHealth;
         healthBar.maxValue = player.GetComponent<Health>().maxHealth;
         healthText.text = player.GetComponent<Health>().currentHealth + "/" + player.GetComponent<Health>().maxHealth;
-        ammoText.text = player.GetComponent<Player>().currentAmmo + "/" + player.GetComponent<Player>().maxAmmo;
+        ammoText.text = player.GetComponent<PlayerController>().currentAmmo + "/" + player.GetComponent<PlayerController>().maxAmmo;
         // Set reload timer max every frame, but its current value is handled by the countdown co-routine in player class
         reloadTimer.maxValue = maxReload;
         // Wave timer, stays same size the whole time
@@ -74,10 +74,10 @@ public class UIManager : MonoBehaviour
         // Unsubscribe to player reload timer
         if(player != null)
         {
-            player.GetComponent<Player>().OnReloadTimerStart -= StartReloadTimer;
-            player.GetComponent<Player>().OnReloadTimerTick -= TickReloadTimer;
-            player.GetComponent<Player>().OnReloadTimerEnd -= RemoveReloadTimer;
-            player.GetComponent<Player>().OnDeath -= SwapToGameOver;  
+            player.GetComponent<PlayerController>().OnReloadTimerStart -= StartReloadTimer;
+            player.GetComponent<PlayerController>().OnReloadTimerTick -= TickReloadTimer;
+            player.GetComponent<PlayerController>().OnReloadTimerEnd -= RemoveReloadTimer;
+            player.GetComponent<PlayerController>().OnDeath -= SwapToGameOver;  
         }
         
         // Unsubscribe to game manager events

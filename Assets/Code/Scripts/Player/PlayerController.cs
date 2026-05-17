@@ -6,7 +6,7 @@ using System.Collections;
 
 [RequireComponent(typeof(Health))]
 [RequireComponent(typeof(PlayerInputHandler))]
-public class Player : MonoBehaviour
+public class PlayerController : MonoBehaviour
 {
 
     // PLAYER CHARACTERISTICS
