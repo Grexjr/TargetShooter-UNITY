@@ -9,38 +9,23 @@ using System.Collections;
 public class Player : MonoBehaviour
 {
 
-    // Player states
-    private enum PlayerState
-    {
-        ALIVE, // just generic alive
-        RELOADING, // when alive and reloading
-        DEAD // when dead
-    }
+    // PLAYER CHARACTERISTICS
+    private Health health;
+    private PlayerInputHandler input;
+    [SerializeField] private FirstPersonCamera playerCamera;
+    [SerializeField] private Weapon currentWeapon;
 
-    // Broadcasts
+    // PLAYER EVENTS
     public System.Action OnReloadTimerStart; // broadcast to: HUDManager
     public System.Action<float> OnReloadTimerTick; // broadcast to: HUDManager
     public System.Action OnReloadTimerEnd; // broadcast to: HUDManager
     public System.Action OnDeath; // broadcast to: GameManager
 
-    // Necessary player components
-    private Health health;
-    private PlayerInputHandler input;
-    [SerializeField] private FirstPersonCamera playerCamera;
-
-    // Necessary player variables
-    private PlayerState state;
-
+    // PLAYER VARIABLES
     public int maxAmmo, currentAmmo;
-
-    // Bullet reference
-    public GameObject bulletPrefab;
-
 
     // Timer variable for reload buffer, in seconds
     private float reloadBuffer = 1.5f;
-    // CoRoutine for stopping the countdown if needed
-    private Coroutine reloadCountdown;
 
     // Initialization, guaranteed to happen first
     void Awake()
@@ -48,13 +33,9 @@ public class Player : MonoBehaviour
         // Basic initialization
         health = GetComponent<Health>();
         input = GetComponent<PlayerInputHandler>();
-        state = PlayerState.ALIVE;
-
-        maxAmmo = 5;
-        currentAmmo = maxAmmo;
 
         // Subscribe to game manager broadcasts and call reset state when game is restarted
-        GameManager.Instance.OnGameRestart += ResetStats;
+        GameManager.Instance.OnGameRestart += ResetState;
     }
 
 
@@ -63,7 +44,19 @@ public class Player : MonoBehaviour
     {
         // Subscribe to input events
         input.onAttack += Shoot;
-        input.onReload += DoReload;
+        input.onReload += Reload;
+
+        // Initialize weapon if it exists
+        if(currentWeapon != null)
+        {
+            // Subscribe to weapon events
+            currentWeapon.onReloadStart += BubbleReloadStart;
+            currentWeapon.onReloadTick += BubbleReloadTick;
+            currentWeapon.onReloadEnd += BubbleReloadEnd;
+            // Initialize weapon information
+            maxAmmo = currentWeapon.GetMaxAmmo();
+            currentAmmo = currentWeapon.GetCurrentAmmo();
+        }
     }
 
     // Update is called once per frame
@@ -72,7 +65,7 @@ public class Player : MonoBehaviour
         // Get the look input vector
         Vector2 look = input.LookInput;
         
-        // FIXME: This is part of the temporary fix; this pauses the game, in future we should change this to be a better
+        // TODO: This is part of the temporary fix; this pauses the game, in future we should change this to be a better
         // pausing system.
         if(Time.timeScale > 0)
         {
@@ -82,9 +75,17 @@ public class Player : MonoBehaviour
 
     void OnDisable()
     {
-        GameManager.Instance.OnGameRestart -= ResetStats;
+        GameManager.Instance.OnGameRestart -= ResetState;
+
         input.onAttack -= Shoot;
-        input.onReload -= DoReload;
+        input.onReload -= Reload;
+
+        if(currentWeapon != null)
+        {
+            currentWeapon.onReloadStart -= BubbleReloadStart;
+            currentWeapon.onReloadTick -= BubbleReloadTick;
+            currentWeapon.onReloadEnd -= BubbleReloadEnd;
+        }
     }
 
     public float GetReloadBuffer()
@@ -96,14 +97,14 @@ public class Player : MonoBehaviour
     {
         if (other.CompareTag("Enemy"))
         {
-            TakeDamage();
+            TakeDamage(1);
         }
     }
 
-    public void TakeDamage()
+    public void TakeDamage(int damage)
     {
         // Reduce health
-        health.TakeDamage(1);
+        health.TakeDamage(damage);
         // Broadcast event that player has died if health == 0
         if(health.CheckDeath())
         {
@@ -111,53 +112,38 @@ public class Player : MonoBehaviour
         }
     }
 
-    void ReduceAmmo()
-    {
-        currentAmmo -= 1;
-    }
-
     void Reload()
     {
-        currentAmmo = maxAmmo;
-    }
-
-    IEnumerator DoReloadCountdown()
-    {
-        // Send out event for HUDManager to listen to to enable the reload bar and count down on the UI
-        OnReloadTimerStart?.Invoke();
-
-        float timeRemaining = reloadBuffer;
-
-        while(timeRemaining > 0)
+        if(currentWeapon != null)
         {
-            // Subtract time passed since last frame
-            timeRemaining -= Time.deltaTime;
-
-            // Update UI
-            // Passes in a variable to the broadcast to the event, that's really cool
-            OnReloadTimerTick?.Invoke(timeRemaining);
-       
-            yield return null;
+            currentWeapon.Reload();
         }
-
-        OnReloadTimerEnd?.Invoke();
-        state = PlayerState.ALIVE;
-        Reload();
     }
 
     void Shoot()
     {
-        if(state != PlayerState.RELOADING) 
-        {
-            Instantiate(bulletPrefab,playerCamera.transform.position,playerCamera.transform.rotation);
-            ReduceAmmo();
-        }
-    }
+        // Get camera transform
+        Transform camTransform = playerCamera.transform;
+        Vector3 targetPoint;
 
-    void DoReload()
-    {
-        state = PlayerState.RELOADING;
-        reloadCountdown = StartCoroutine(DoReloadCountdown());
+        // If gun does not exist, just return and do nothing
+        if(currentWeapon == null) return;
+
+        // Cast a ray from your eyes straight through crosshair
+        if(Physics.Raycast(camTransform.position,camTransform.forward, out RaycastHit hit, 100f, ~LayerMask.GetMask("Player")))
+        {
+            // Hit enemy or wall
+            targetPoint = hit.point;
+        }
+        else
+        {
+            // Otherwise choose point 100 meters away
+            targetPoint = camTransform.position + camTransform.forward * 10f;
+        }
+
+        // Pass target point and camera transform to gun's fire method
+        currentWeapon.Fire(playerCamera.transform,targetPoint);
+        currentAmmo = currentWeapon.GetCurrentAmmo();   
     }
 
     void Look(float mouseDeltaX, float mouseDeltaY)
@@ -173,20 +159,34 @@ public class Player : MonoBehaviour
         playerCamera.UpdatePitchAndYaw(mouseX,mouseY);
     }
 
-    void ResetStats()
+    void ResetState()
     {
-        state = PlayerState.ALIVE;
-
+        // Reset health
         health.ResetHealth();
-        currentAmmo = maxAmmo;
-        if(reloadCountdown != null)
-        {
-            // Stop and remov the coRoutine
-            StopCoroutine(reloadCountdown);
-            reloadCountdown = null;
-            // Tell the UI to hide the bar
-            OnReloadTimerEnd?.Invoke();
-        }
         
+        // Reset weapon
+        if(currentWeapon != null)
+        {
+            currentWeapon.Reset();
+        }
     }
+
+    private void BubbleReloadStart()
+    {
+        OnReloadTimerStart?.Invoke();
+    }
+
+    private void BubbleReloadTick(float timeRemaining)
+    {
+        OnReloadTimerTick?.Invoke(timeRemaining);
+    }
+
+    private void BubbleReloadEnd()
+    {
+        OnReloadTimerEnd?.Invoke();
+        //TODO Change to a single function update ammo/update weapon
+        currentAmmo = currentWeapon.GetCurrentAmmo();
+    }
+
+
 }

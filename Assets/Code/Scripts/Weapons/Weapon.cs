@@ -1,30 +1,55 @@
 using System;
+using System.Collections;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public class Weapon : MonoBehaviour
 {
 
-    // BULLET VARIABLES
+    private enum WeaponState
+    {
+        READY,
+        RELOADING
+    }
+
+    // WEAPON CHARACTERISTICS
     [SerializeField] private Transform muzzle;
     [SerializeField] private GameObject bulletPrefab;
     [SerializeField] private float fireRate = 0.5f;
-    [SerializeField] private float reloadTime = 5.0f;
+    [SerializeField] private float reloadTime = 0.5f;
+    [SerializeField] private int maxAmmo = 10;
+    [SerializeField] private WeaponState weaponState = WeaponState.READY;
 
-    // BULLET EVENTS
-    //TODO: Event for reload that player can call on to do ui reload stuff
+    // WEAPON EVENTS
+    public System.Action onReloadStart;
+    public System.Action<float> onReloadTick;
+    public System.Action onReloadEnd;
     //TODO: Event for firing in case we want to add sound, etc
 
+    // RELOAD VARIABLES
     private float nextFireTime;
-    private int maxAmmo = 10;
     private int currentAmmo;
+    // Variable for reference to coRoutine in case reset is called
+    private Coroutine reloadRoutine;
 
-    void Awake()
+    // Getters
+    public Coroutine GetReloadRoutine()
     {
-        RefillAmmo(); 
+        return reloadRoutine;
+    }
+
+    public int GetMaxAmmo()
+    {
+        return maxAmmo;
+    }
+
+    public int GetCurrentAmmo()
+    {
+        return currentAmmo;
     }
 
     // Method to fire gun
-    void Fire()
+    public void Fire(Transform cameraTransform, Vector3 targetPoint)
     {
         // If time has not passed enough for next fire time, return early (no shoot)
         if(Time.time < nextFireTime) return;
@@ -32,21 +57,58 @@ public class Weapon : MonoBehaviour
         // If no ammunition, don't fire
         if(!HasAmmo()) return;
 
-        // TODO: Add state here for reloading; if reloading, do not fire
-
+        // If reloading, then don't fire
+        if(weaponState == WeaponState.RELOADING) return;
 
         // Otherwise, fire
-        ExecuteShot();
+        ExecuteShot(cameraTransform, targetPoint);
     }
 
     // TODO: Reload function
-    void Reload()
+    public void Reload()
     {
+        // Set state to reloading
+        weaponState = WeaponState.RELOADING;
+
         // Invoke event
+        onReloadStart?.Invoke();
 
-        // Do own internal reload timer (same way as player and UI interact)
+        // Start the reloading routine
+        reloadRoutine = StartCoroutine(CountdownReload());
+    }
 
-        // Finish the reload same way as in player
+    public void Reset()
+    {
+        RefillAmmo();
+        if(reloadRoutine != null)
+        {
+            // Stop and remov the coRoutine
+            StopCoroutine(reloadRoutine);
+            reloadRoutine = null;
+            // Tell the UI to hide the bar
+            onReloadEnd?.Invoke();
+        }
+    }
+
+    private IEnumerator CountdownReload()
+    {
+        float timeRemaining = reloadTime;
+
+        while(timeRemaining > 0)
+        {
+            // Decrement time remaining by time difference
+            timeRemaining -= Time.deltaTime;
+
+            // Send out event that the reload timer is ticking (for UI purposes)
+            onReloadTick?.Invoke(timeRemaining);
+
+            yield return null;
+        }
+
+        // Finish the reload same way as in player: refill ammo then broadcast that reload is done
+        RefillAmmo();
+        weaponState = WeaponState.READY;
+        onReloadEnd?.Invoke();
     }
 
 
@@ -65,14 +127,22 @@ public class Weapon : MonoBehaviour
         return true;
     }
 
-    private void ExecuteShot()
+    private void ExecuteShot(Transform cameraTransform, Vector3 targetPoint)
     {
         // Reduce ammo, instantiate a bullet at the muzzle position and then increment next fire time for next cooldown
         currentAmmo--;
 
         nextFireTime = Time.time + fireRate;
 
-        Instantiate(bulletPrefab,muzzle.position,muzzle.rotation);
+        Vector3 directionToTarget = targetPoint - muzzle.position;
+        Quaternion targetRotation = Quaternion.LookRotation(directionToTarget);
+
+        Instantiate(bulletPrefab,muzzle.position,targetRotation);
+    }
+
+    void Awake()
+    {
+        RefillAmmo(); 
     }
 
 }
