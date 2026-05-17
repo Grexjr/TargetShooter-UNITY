@@ -21,6 +21,7 @@ public class PlayerController : MonoBehaviour
     public System.Action OnReloadTimerStart;
     public System.Action<float> OnReloadTimerTick;
     public System.Action OnReloadTimerEnd;
+    public System.Action<int, int> onAmmoChanged;
 
     // Health events
     public System.Action onHealthChanged;
@@ -39,6 +40,14 @@ public class PlayerController : MonoBehaviour
 
         // Subscribe to game manager broadcasts and call reset state when game is restarted
         GameManager.Instance.OnGameRestart += ResetState;
+
+        // Initialize weapon if it exists
+        if(currentWeapon != null)
+        {
+            // Initialize weapon information
+            maxAmmo = currentWeapon.GetMaxAmmo();
+            currentAmmo = currentWeapon.GetCurrentAmmo();
+        }
     }
 
 
@@ -48,18 +57,17 @@ public class PlayerController : MonoBehaviour
         // Subscribe to input events
         input.onAttack += Shoot;
         input.onReload += Reload;
+    }
 
-        // Initialize weapon if it exists
+    void OnEnable()
+    {
+        // Subscribe to weapon events if it exists
         if(currentWeapon != null)
         {
-            // Subscribe to weapon events
             currentWeapon.onReloadStart += BubbleReloadStart;
             currentWeapon.onReloadTick += BubbleReloadTick;
             currentWeapon.onReloadEnd += BubbleReloadEnd;
-            currentWeapon.onAmmoChanged += UpdatePlayerAmmo;
-            // Initialize weapon information
-            maxAmmo = currentWeapon.GetMaxAmmo();
-            currentAmmo = currentWeapon.GetCurrentAmmo();
+            currentWeapon.onAmmoChanged += UpdatePlayerAmmo;  
         }
     }
 
@@ -105,6 +113,16 @@ public class PlayerController : MonoBehaviour
     public float GetReloadTime()
     {
         return currentWeapon.GetReloadTime();
+    }
+
+    public int GetCurrentAmmo()
+    {
+        return currentAmmo;
+    }
+
+    public int GetMaxAmmo()
+    {
+        return maxAmmo;
     }
 
     public void TakeDamage(int damage)
@@ -181,6 +199,7 @@ public class PlayerController : MonoBehaviour
     {
         currentAmmo = current;
         maxAmmo = max;
+        onAmmoChanged?.Invoke(current,max);
     }
 
     private void BubbleReloadStart()

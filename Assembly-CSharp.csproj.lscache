@@ -62,6 +62,7 @@ Assets/Code/Scripts/
   PlayerInputHandler.cs
  SpawnManager.cs
  UI/
+  AmmoDisplayUI.cs
   HealthBarUI.cs
   RadarEntity.cs
   RadarManager.cs

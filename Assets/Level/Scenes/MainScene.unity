@@ -144,18 +144,18 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 121188040}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1377191580}
   - {fileID: 1755145911}
-  m_Father: {fileID: 330278298}
+  m_Father: {fileID: 2055230364}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 1}
-  m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 151, y: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 25}
   m_SizeDelta: {x: 175, y: 50}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &121188042
@@ -745,7 +745,7 @@ RectTransform:
   - {fileID: 2077905931}
   - {fileID: 446591267}
   - {fileID: 1163530260}
-  - {fileID: 121188041}
+  - {fileID: 2055230364}
   - {fileID: 905162300}
   - {fileID: 511629667}
   m_Father: {fileID: 0}
@@ -1531,8 +1531,6 @@ MonoBehaviour:
   waveTimerFillRect: {fileID: 648224217}
   waveText: {fileID: 1167431545}
   scoreText: {fileID: 446591268}
-  ammoText: {fileID: 121188042}
-  reloadTimer: {fileID: 1755145912}
 --- !u!4 &535470822
 Transform:
   m_ObjectHideFlags: 0
@@ -3071,7 +3069,7 @@ GameObject:
   - component: {fileID: 1163530260}
   - component: {fileID: 1163530261}
   m_Layer: 5
-  m_Name: HealthBar
+  m_Name: HealthElement
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4769,6 +4767,58 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2051360697}
   m_CullTransparentMesh: 1
+--- !u!1 &2055230363
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2055230364}
+  - component: {fileID: 2055230365}
+  m_Layer: 5
+  m_Name: AmmoElement
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &2055230364
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2055230363}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 121188041}
+  m_Father: {fileID: 330278298}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 1, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: -235.10445, y: -25}
+  m_SizeDelta: {x: 100, y: 50}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2055230365
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2055230363}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38b6b8e820c02de18932adbab578e4b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AmmoUI
+  ammoText: {fileID: 121188042}
+  reloadTimer: {fileID: 1755145912}
+  playerControl: {fileID: 1292310004}
 --- !u!1 &2077905930
 GameObject:
   m_ObjectHideFlags: 0

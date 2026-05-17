@@ -25,7 +25,8 @@ public class Weapon : MonoBehaviour
     public System.Action<float> onReloadTick;
     public System.Action onReloadEnd;
     public System.Action<int,int> onAmmoChanged;
-    //TODO: Event for firing in case we want to add sound, etc
+    //Event for firing in case we want to add sound, etc
+    public System.Action onFire;
 
     // RELOAD VARIABLES
     private float nextFireTime;
@@ -75,7 +76,6 @@ public class Weapon : MonoBehaviour
         ExecuteShot(targetPoint);
     }
 
-    // TODO: Reload function
     public void Reload()
     {
         // Set state to reloading
